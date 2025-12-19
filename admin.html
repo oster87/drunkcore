@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="sv">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drunkcode Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white p-6 flex flex-col items-center justify-center min-h-screen space-y-8">
+
+    <div class="text-center">
+        <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-cyan-500 mb-2">
+            DRUNKCODE</h1>
+        <p class="text-gray-500 tracking-widest uppercase text-sm">Location Controller</p>
+    </div>
+
+    <!-- Login Section -->
+    <div id="login-panel" class="w-full max-w-sm space-y-4">
+        <div class="bg-gray-900 border border-gray-800 p-8 rounded-2xl shadow-2xl">
+            <h2 class="text-xl font-bold mb-6 text-center text-gray-300">ADMIN LOGIN</h2>
+            <input type="text" id="username" placeholder="Användarnamn"
+                class="w-full bg-black border border-gray-700 p-4 rounded-lg mb-4 text-white focus:outline-none focus:border-cyan-500">
+            <input type="password" id="password" placeholder="Lösenord"
+                class="w-full bg-black border border-gray-700 p-4 rounded-lg mb-6 text-white focus:outline-none focus:border-pink-500">
+            <button onclick="login()"
+                class="w-full py-4 bg-white text-black font-bold rounded-lg hover:bg-gray-200 transition-colors uppercase tracking-wider">
+                Logga In
+            </button>
+            <p id="login-error" class="text-red-500 text-center text-sm mt-4 hidden">Fel uppgifter!</p>
+        </div>
+    </div>
+
+    <!-- Admin Controls (Initially Hidden) -->
+    <div id="admin-panel" class="w-full hidden flex-col items-center gap-8 animate-fade-in">
+        <!-- GPS Button -->
+        <button onclick="shareLocation()" id="gps-btn"
+            class="w-full max-w-sm py-8 bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-2xl rounded-2xl shadow-[0_0_20px_rgba(6,182,212,0.5)] transition-all active:scale-95 flex flex-col items-center gap-4">
+            <i data-lucide="map-pin" class="w-12 h-12"></i>
+            <span>ANVÄND MIN GPS</span>
+        </button>
+        <p id="status" class="text-gray-400 text-sm h-6 text-center"></p>
+
+        <div class="w-full max-w-sm border-t border-gray-800 pt-8">
+            <p class="mb-2 text-gray-500 text-sm text-center">Eller klistra in länk manuellt:</p>
+            <input type="text" id="manual-link" placeholder="https://maps.google.com..."
+                class="w-full bg-gray-900 border border-gray-700 p-4 rounded-lg mb-4 text-white focus:outline-none focus:border-pink-500">
+            <button onclick="sendManualLink()"
+                class="w-full py-4 border border-pink-500 text-pink-500 hover:bg-pink-500 hover:text-white font-bold rounded-lg transition-colors">
+                SKICKA LÄNK
+            </button>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function login() {
+            const user = document.getElementById('username').value.toLowerCase();
+            const pass = document.getElementById('password').value;
+            const error = document.getElementById('login-error');
+
+            if (user === 'haze' && pass === 'hazehaze') {
+                // Success
+                document.getElementById('login-panel').classList.add('hidden');
+                document.getElementById('admin-panel').classList.remove('hidden');
+                document.getElementById('admin-panel').classList.add('flex');
+            } else {
+                // Fail
+                error.classList.remove('hidden');
+            }
+        }
+
+        async function updateServer(mapLink) {
+            const status = document.getElementById('status');
+            status.innerText = "Skickar till servern...";
+            status.className = "text-yellow-400 text-sm h-6 text-center";
+
+            try {
+                const response = await fetch('/api/location', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mapLink: mapLink })
+                });
+
+                if (response.ok) {
+                    status.innerText = "✅ Platsen uppdaterad!";
+                    status.className = "text-green-400 text-sm h-6 font-bold text-center";
+                    setTimeout(() => status.innerText = "", 3000);
+                } else {
+                    throw new Error("Server fel");
+                }
+            } catch (e) {
+                status.innerText = "❌ Kunde inte nå servern.";
+                status.className = "text-red-500 text-sm h-6 text-center";
+                alert("Kunde inte nå servern. Är du ansluten till samma Wi-Fi?");
+            }
+        }
+
+        function shareLocation() {
+            const status = document.getElementById('status');
+            if (!navigator.geolocation) {
+                alert("Din webbläsare stödjer inte GPS.");
+                return;
+            }
+
+            status.innerText = "Hämtar position...";
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    // Create exact Google Maps coordinate link
+                    const link = `https://www.google.com/maps?q=${lat},${lon}`;
+                    updateServer(link);
+                },
+                (error) => {
+                    status.innerText = "❌ Kunde inte hämta GPS.";
+                    let msg = "Kunde inte hämta plats.";
+                    if (error.code == 1) msg = "Du nekade platsåtkomst.";
+                    if (error.code == 2) msg = "Ingen GPS-signal.";
+                    alert(msg);
+                },
+                { enableHighAccuracy: true }
+            );
+        }
+
+        function sendManualLink() {
+            const link = document.getElementById('manual-link').value;
+            if (!link) return;
+            updateServer(link);
+        }
+    </script>
+</body>
+
+</html>

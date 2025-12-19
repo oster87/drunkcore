@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="sv" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drukcode Winter Bash 2025</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Bebas Neue för Poster-känslan -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;700;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif'],
+                        display: ['Bebas Neue', 'sans-serif'],
+                    },
+                    colors: {
+                        winter: {
+                            dark: '#020617',      // Almost black blue
+                            night: '#172554',     // Deep blue
+                        },
+                        neon: {
+                            pink: '#ff00ff',      // Magenta
+                            cyan: '#00ffff',      // Cyan
+                            yellow: '#ffff00',    // Yellow
+                        }
+                    },
+                    backgroundImage: {
+                        'hero-image': "url('hero_clarified.png')",
+                        'disco-gradient': 'linear-gradient(to bottom, rgba(2,6,23,0.3), rgba(2,6,23,0.9))'
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'spin-slow': 'spin 3s linear infinite',
+                    },
+                    keyframes: {
+                        glow: {
+                            '0%': { textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073' },
+                            '100%': { textShadow: '0 0 20px #fff, 0 0 30px #ff4da6, 0 0 40px #ff4da6, 0 0 50px #ff4da6, 0 0 60px #ff4da6, 0 0 70px #ff4da6, 0 0 80px #ff4da6' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Snowflake layer */
+        .snowflake {
+            position: absolute;
+            color: #fff;
+            font-size: 1em;
+            font-family: Arial;
+            text-shadow: 0 0 1px #000;
+            z-index: 0;
+        }
+
+        .poster-text {
+            line-height: 0.9;
+            letter-spacing: 0.05em;
+        }
+
+        /* Glass / Overlay */
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .neon-box {
+            box-shadow: 0 0 10px #00ffff, inset 0 0 10px #00ffff;
+            border: 1px solid #00ffff;
+        }
+
+        /* Glitch Effect */
+        .glitch {
+            position: relative;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch::before {
+            left: 2px;
+            text-shadow: -1px 0 #ff00ff;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+
+        .glitch::after {
+            left: -2px;
+            text-shadow: -1px 0 #00ffff;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% {
+                clip: rect(33px, 9999px, 11px, 0);
+            }
+
+            20% {
+                clip: rect(87px, 9999px, 96px, 0);
+            }
+
+            40% {
+                clip: rect(15px, 9999px, 86px, 0);
+            }
+
+            60% {
+                clip: rect(2px, 9999px, 63px, 0);
+            }
+
+            80% {
+                clip: rect(59px, 9999px, 2px, 0);
+            }
+
+            100% {
+                clip: rect(38px, 9999px, 46px, 0);
+            }
+        }
+
+        @keyframes glitch-anim2 {
+            0% {
+                clip: rect(12px, 9999px, 52px, 0);
+            }
+
+            20% {
+                clip: rect(65px, 9999px, 23px, 0);
+            }
+
+            40% {
+                clip: rect(31px, 9999px, 91px, 0);
+            }
+
+            60% {
+                clip: rect(89px, 9999px, 5px, 0);
+            }
+
+            80% {
+                clip: rect(4px, 9999px, 78px, 0);
+            }
+
+            100% {
+                clip: rect(67px, 9999px, 32px, 0);
+            }
+        }
+
+        /* Scroll Animation utility */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Markdown formatting for AI response */
+        .ai-response strong {
+            color: #00ffff;
+        }
+    </style>
+</head>
+
+<body class="bg-winter-dark text-white font-sans antialiased overflow-x-hidden">
+
+    <!-- Snow Animation Overlay -->
+    <div id="snow-container" class="fixed inset-0 pointer-events-none z-10 opacity-70"></div>
+
+    <!-- Background Image Fixed -->
+    <div class="fixed inset-0 z-0">
+        <div class="absolute inset-0 bg-hero-image bg-cover bg-center bg-no-repeat"></div>
+        <div class="absolute inset-0 bg-disco-gradient"></div>
+        <!-- Noise texture for gritty feel -->
+        <div
+            class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay">
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 top-0 start-0 p-4 md:p-6">
+        <div class="flex justify-between items-center max-w-7xl mx-auto">
+            <a href="#"
+                class="font-display text-3xl tracking-wider text-white hover:text-neon-cyan transition-colors drop-shadow-lg">
+                DRUNK<span class="text-neon-pink">CODE</span>
+            </a>
+
+            <div class="hidden md:flex gap-6">
+                <a href="#info"
+                    class="font-display text-xl uppercase tracking-wide hover:text-neon-cyan transition-colors">Info</a>
+                <a href="#location"
+                    class="font-display text-xl uppercase tracking-wide hover:text-neon-cyan transition-colors">Plats</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Poster Section -->
+    <section class="relative z-20 min-h-screen flex flex-col items-center justify-center text-center px-4 py-20">
+
+        <!-- Floating Elements -->
+        <div class="absolute top-1/4 left-10 md:left-1/4 animate-bounce hidden md:block opacity-50">
+            <i data-lucide="snowflake" class="w-12 h-12 text-neon-cyan"></i>
+        </div>
+        <div class="absolute bottom-1/4 right-10 md:right-1/4 animate-pulse hidden md:block opacity-50">
+            <i data-lucide="disc" class="w-12 h-12 text-neon-pink"></i>
+        </div>
+
+        <div class="space-y-4 mb-2 relative z-30">
+            <!-- Brand / Organizer -->
+            <div class="flex flex-col items-center">
+                <span data-text="DRUNKCODE"
+                    class="glitch font-display text-4xl md:text-5xl text-neon-pink tracking-widest drop-shadow-[0_0_10px_rgba(255,0,255,0.5)]">
+                    DRUNKCODE
+                </span>
+                <span class="font-mono text-sm md:text-base text-white tracking-[0.5em] uppercase opacity-80 mt-1">
+                    Presents
+                </span>
+            </div>
+        </div>
+
+        <h1
+            class="font-display text-[5rem] md:text-[9rem] leading-none poster-text uppercase text-white mb-8 relative z-30">
+            <span data-text="Freezing"
+                class="glitch block text-neon-cyan drop-shadow-[0_0_15px_rgba(0,255,255,0.6)]">Freezing</span>
+            <span data-text="Man" class="glitch block text-white drop-shadow-lg md:-mt-4">Man</span>
+        </h1>
+
+        <!-- Countdown -->
+        <div class="flex gap-4 md:gap-8 justify-center mb-12 relative z-30 reveal">
+            <div class="text-center">
+                <span id="days" class="font-display text-4xl md:text-6xl text-white">00</span>
+                <span class="block text-xs uppercase text-neon-cyan tracking-widest">Dagar</span>
+            </div>
+            <div class="text-center">
+                <span id="hours" class="font-display text-4xl md:text-6xl text-white">00</span>
+                <span class="block text-xs uppercase text-neon-pink tracking-widest">Timmar</span>
+            </div>
+            <div class="text-center">
+                <span id="minutes" class="font-display text-4xl md:text-6xl text-white">00</span>
+                <span class="block text-xs uppercase text-neon-yellow tracking-widest">Min</span>
+            </div>
+        </div>
+
+        <div
+            class="glass-dark p-6 rounded-none border-l-4 border-neon-cyan max-w-2xl mx-auto transform skew-x-[-10deg] hover:skew-x-0 transition-transform duration-500">
+            <div class="transform skew-x-[10deg] text-center">
+                <p class="font-sans text-lg md:text-2xl font-bold uppercase tracking-wider text-gray-200">
+                    Haze · Techno · Ljus
+                </p>
+                <div class="w-20 h-1 bg-neon-pink mx-auto my-4"></div>
+                <p class="font-sans text-gray-300">
+                    Ingen agenda. Inga krav. Bara grymt häng i snön.
+                </p>
+            </div>
+        </div>
+
+        <!-- Info Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 w-full max-w-4xl reveal">
+            <!-- Box 1 -->
+            <div
+                class="bg-black/60 backdrop-blur-md border border-white/20 p-6 flex flex-col items-center group hover:border-neon-cyan transition-colors">
+                <i data-lucide="calendar"
+                    class="w-8 h-8 text-neon-cyan mb-2 group-hover:scale-110 transition-transform"></i>
+                <span class="font-display text-3xl">Söndag-Onsdag</span>
+                <span class="text-sm uppercase text-gray-400">V5</span>
+            </div>
+
+            <!-- Box 2 -->
+            <div
+                class="bg-black/60 backdrop-blur-md border border-white/20 p-6 flex flex-col items-center group hover:border-neon-pink transition-colors">
+                <i data-lucide="clock"
+                    class="w-8 h-8 text-neon-pink mb-2 group-hover:scale-110 transition-transform"></i>
+                <span class="font-display text-3xl">12:00</span>
+                <span class="text-sm uppercase text-gray-400">Till Sent</span>
+            </div>
+
+            <!-- Box 3 -->
+            <div
+                class="bg-black/60 backdrop-blur-md border border-white/20 p-6 flex flex-col items-center group hover:border-neon-yellow transition-colors">
+                <i data-lucide="ticket"
+                    class="w-8 h-8 text-neon-yellow mb-2 group-hover:scale-110 transition-transform"></i>
+                <span class="font-display text-3xl">GRATIS</span>
+                <span class="text-sm uppercase text-gray-400">Drop-in</span>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Content / Vibe -->
+    <section id="info" class="relative z-20 bg-black py-24 border-t border-white/10">
+        <div class="max-w-6xl mx-auto px-6 reveal">
+            <div class="flex flex-col md:flex-row gap-16 items-center">
+                <div class="md:w-1/2">
+                    <h2 class="font-display text-6xl text-white mb-6 leading-none">
+                        Techno i <br><span class="text-neon-pink">Naturen.</span>
+                    </h2>
+                    <p class="text-xl text-gray-400 mb-8 font-light">
+                        Vi flyttar ut högtalarna i snön för ett rått och intimt DJ-set under bar himmel.
+                        Tunga basgångar möter vinterkylan. Klä dig varmt, dansa dig svettig.
+                    </p>
+
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-4">
+                            <div class="bg-neon-cyan/10 p-3 rounded-full text-neon-cyan">
+                                <i data-lucide="music-2" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-display text-2xl">Live Set</h3>
+                                <p class="text-sm text-gray-500">Hypnotic & Peak Time Techno</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="bg-neon-yellow/10 p-3 rounded-full text-neon-yellow">
+                                <i data-lucide="beer" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-display text-2xl">I Baren</h3>
+                                <p class="text-sm text-gray-500">Endast Pistonhead Haze Lager</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:w-1/2 relative">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-tr from-neon-cyan to-neon-pink blur-3xl opacity-20 rounded-full">
+                    </div>
+                    <div class="relative border-2 border-white/10 p-8 bg-white/5 backdrop-blur-sm">
+                        <h3 class="font-display text-4xl mb-4 text-center">LINEUP</h3>
+                        <ul class="space-y-4 text-center font-mono text-lg text-neon-cyan">
+                            <li class="border-b border-white/10 pb-2">Gurgel</li>
+                            <li class="border-b border-white/10 pb-2">Oster</li>
+                            <li class="pb-2">More TBA...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Location -->
+    <section id="location" class="relative z-20 py-24 bg-winter-dark border-t border-white/10">
+        <div class="max-w-4xl mx-auto px-6 text-center reveal">
+            <i data-lucide="map-pin" class="w-12 h-12 text-neon-pink mx-auto mb-6"></i>
+            <h2 class="font-display text-5xl md:text-7xl mb-8">HITTA HIT</h2>
+
+            <div class="p-1 bg-gradient-to-r from-neon-cyan via-white to-neon-pink rounded-2xl">
+                <div class="bg-black p-8 md:p-12 rounded-[14px]">
+                    <address class="not-italic text-2xl md:text-4xl font-display mb-8 text-white">
+                        Tandådalen<br>
+                        <span class="text-gray-500 text-xl md:text-2xl font-sans font-bold">Sälen</span>
+                    </address>
+
+                    <a id="location-link"
+                        href="https://www.google.com/maps/place/61%C2%B010'25.5%22N+13%C2%B000'26.4%22E/@61.1739025,13.0115595,749m/data=!3m1!1e3!4m4!3m3!8m2!3d61.173735!4d13.007344?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoASAFQAw%3D%3D"
+                        target="_blank"
+                        class="inline-block bg-white text-black font-display text-xl px-10 py-4 hover:bg-neon-cyan transition-colors uppercase tracking-widest">
+                        Visa Karta
+                    </a>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="relative z-20 bg-black py-12 text-center border-t border-white/10">
+        <p class="font-display text-3xl text-white mb-2">DRUKCODE</p>
+        <p class="text-gray-600 font-mono text-sm mb-8">EST. 2026 · Sälen</p>
+
+        <a href="https://www.youtube.com/@Drunkcode-Live" target="_blank"
+            class="inline-flex items-center gap-3 text-white hover:text-red-500 transition-colors group">
+            <i data-lucide="youtube" class="w-6 h-6 group-hover:fill-current"></i>
+            <span class="font-display text-xl tracking-widest text-red-500 group-hover:text-red-400">SE LIVE PÅ
+                YOUTUBE</span>
+        </a>
+    </footer>
+
+    <!-- Admin Link -->
+    <a href="/admin.html" target="_blank"
+        class="fixed bottom-4 right-4 z-50 p-3 bg-black/50 border border-white/10 rounded-full hover:bg-neon-pink text-white/50 hover:text-white transition-all backdrop-blur-sm"
+        title="Admin Controller">
+        <i data-lucide="settings" class="w-6 h-6"></i>
+    </a>
+
+    <script>
+        // Warning if opened directly
+        if (window.location.protocol === 'file:') {
+            alert("OBS! Du har öppnat filen direkt. För att kart-uppdateringen ska funka måste du gå till http://localhost:3000 i webbläsaren!");
+        }
+
+        // Location Fetch Logic
+        async function fetchLocation() {
+            try {
+                const response = await fetch('/api/location');
+                if (!response.ok) throw new Error("Offline");
+                const data = await response.json();
+
+                // Only update the link dynamically
+                if (data.mapLink) {
+                    const linkEl = document.getElementById('location-link');
+
+                    linkEl.href = data.mapLink;
+
+                    // Visual feedback check
+                    if (linkEl.getAttribute('data-last') !== data.mapLink) {
+                        linkEl.innerText = "VISA KARTA (NY!)";
+                        setTimeout(() => linkEl.innerText = "VISA KARTA", 3000);
+                        linkEl.setAttribute('data-last', data.mapLink);
+                    }
+                }
+            } catch (e) {
+                console.log("Using static location fallback");
+            }
+        }
+
+        // Fetch immediately and then poll faster
+        fetchLocation();
+        setInterval(fetchLocation, 2000);
+
+        lucide.createIcons();
+
+        // Snow Effect
+        const snowContainer = document.getElementById('snow-container');
+        const snowflakeCount = 60;
+
+        function createSnow() {
+            for (let i = 0; i < snowflakeCount; i++) {
+                const flake = document.createElement('div');
+                flake.classList.add('snowflake');
+                flake.innerHTML = ['❄', '❅', '❆'][Math.floor(Math.random() * 3)];
+                flake.style.left = Math.random() * 100 + 'vw';
+                flake.style.opacity = Math.random() * 0.7 + 0.3;
+                flake.style.fontSize = Math.random() * 1.5 + 0.5 + 'em';
+
+                const duration = Math.random() * 5 + 5 + 's';
+                const delay = Math.random() * 5 + 's';
+
+                flake.style.animation = `snow ${duration} linear ${delay} infinite`;
+                flake.style.top = '-50px';
+
+                snowContainer.appendChild(flake);
+            }
+        }
+
+        // Add keyframes dynamically
+        const styleSheet = document.createElement("style");
+        styleSheet.innerText = `
+            @keyframes snow {
+                0% { transform: translateY(-50px) rotate(0deg); opacity: 0; }
+                10% { opacity: 1; }
+                100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+
+        createSnow();
+
+        // Reveal on Scroll
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                var elementVisible = 150;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+        window.addEventListener("scroll", reveal);
+        // Trigger once on load
+        reveal();
+
+        // Countdown Timer
+        const targetDate = new Date("2026-01-25T12:00:00").getTime(); // V4 Söndag
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+
+            if (distance < 0) {
+                document.getElementById("days").innerText = "00";
+                document.getElementById("hours").innerText = "00";
+                document.getElementById("minutes").innerText = "00";
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+
+            document.getElementById("days").innerText = days < 10 ? "0" + days : days;
+            document.getElementById("hours").innerText = hours < 10 ? "0" + hours : hours;
+            document.getElementById("minutes").innerText = minutes < 10 ? "0" + minutes : minutes;
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+    </script>
+</body>
+
+</html>
