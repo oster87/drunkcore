@@ -74,18 +74,30 @@
     <script>
         lucide.createIcons();
 
-        function login() {
+        async function login() {
             const user = document.getElementById('username').value.toLowerCase();
             const pass = document.getElementById('password').value;
             const error = document.getElementById('login-error');
 
-            if (user === 'haze' && pass === 'hazehaze') {
-                // Success
-                document.getElementById('login-panel').classList.add('hidden');
-                document.getElementById('admin-panel').classList.remove('hidden');
-                document.getElementById('admin-panel').classList.add('flex');
-            } else {
-                // Fail
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+
+                if (response.ok) {
+                    // Success
+                    document.getElementById('login-panel').classList.add('hidden');
+                    document.getElementById('admin-panel').classList.remove('hidden');
+                    document.getElementById('admin-panel').classList.add('flex');
+                    error.classList.add('hidden');
+                } else {
+                    // Fail
+                    throw new Error('Login failed');
+                }
+            } catch (e) {
+                error.innerText = "Fel uppgifter!";
                 error.classList.remove('hidden');
             }
         }
@@ -106,13 +118,15 @@
                     status.innerText = "✅ Platsen uppdaterad!";
                     status.className = "text-green-400 text-sm h-6 font-bold text-center";
                     setTimeout(() => status.innerText = "", 3000);
+                } else if (response.status === 401) {
+                    status.innerText = "⛔ Ej inloggad. Ladda om sidan.";
+                    status.className = "text-red-500 text-sm h-6 text-center";
                 } else {
                     throw new Error("Server fel");
                 }
             } catch (e) {
                 status.innerText = "❌ Kunde inte nå servern.";
                 status.className = "text-red-500 text-sm h-6 text-center";
-                alert("Kunde inte nå servern. Är du ansluten till samma Wi-Fi?");
             }
         }
 
