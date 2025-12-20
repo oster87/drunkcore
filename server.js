@@ -8,6 +8,7 @@ const path = require('path');
 require('dotenv').config();
 const helmet = require('helmet');
 const session = require('express-session');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +26,15 @@ app.use(helmet({
         },
     },
 }));
+
+// Rate Limiter for Login
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // Limit each IP to 5 requests per windowMs
+    message: { message: "Too many login attempts, please try again later." },
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
 
 // Session Middleware
 app.use(session({
@@ -62,7 +72,7 @@ const isAuthenticated = (req, res, next) => {
 // --- ROUTES ---
 
 // Login Endpoint
-app.post('/api/login', (req, res) => {
+app.post('/api/login', loginLimiter, (req, res) => {
     const { username, password } = req.body;
 
     // Simple check - in production use hashed passwords!
