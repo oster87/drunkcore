@@ -59,7 +59,7 @@ app.use(express.static(path.join(__dirname, '/')));
 let currentLocation = {
     address: "Tandådalen",
     city: "Sälen",
-    mapLink: "https://maps.google.com/maps?q=61.173735,13.007344&z=15&output=embed&t=h"
+    mapLink: "https://maps.google.com/maps?q=61.173735,13.007344&z=15&output=embed&t=k"
 };
 
 // Middleware to check if user is authenticated
@@ -125,22 +125,22 @@ app.post('/api/location', isAuthenticated, (req, res) => {
                     if (coordMatch) {
                         const [_, lat, lon] = coordMatch;
                         console.log("Found coordinates:", lat, lon);
-                        finalLink = `https://maps.google.com/maps?q=${lat},${lon}&z=15&output=embed&t=h`;
+                        finalLink = `https://maps.google.com/maps?q=${lat},${lon}&z=15&output=embed&t=k`;
                     } else {
                         // Try to find place name
                         const placeMatch = decodedLink.match(/\/maps\/place\/([^/]+)/);
                         if (placeMatch && placeMatch[1]) {
                             // Extract pretty name or encoded string
                             console.log("Found place:", placeMatch[1]);
-                            finalLink = `https://maps.google.com/maps?q=${placeMatch[1]}&z=15&output=embed&t=h`;
+                            finalLink = `https://maps.google.com/maps?q=${placeMatch[1]}&z=15&output=embed&t=k`;
                         } else if (!mapLink.includes('output=embed')) {
                             // If it's a search link like maps?q=... just append output=embed
                             if (mapLink.includes('?q=')) {
-                                finalLink = mapLink + '&output=embed&t=h';
+                                finalLink = mapLink + '&output=embed&t=k';
                             }
                         } else if (mapLink.includes('output=embed') && !mapLink.includes('&t=')) {
                             // If it is already an embed link but misses satellite view
-                            finalLink = mapLink + '&t=h';
+                            finalLink = mapLink + '&t=k';
                         }
                     }
                 }
