@@ -143,8 +143,8 @@
                 (position) => {
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
-                    // Create embeddable Google Maps link
-                    const link = `https://maps.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
+                    // Create embeddable Google Maps link with satellite view (t=h)
+                    const link = `https://maps.google.com/maps?q=${lat},${lon}&z=15&output=embed&t=h`;
                     updateServer(link);
                 },
                 (error) => {
