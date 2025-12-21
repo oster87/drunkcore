@@ -23,6 +23,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "https:"],
             connectSrc: ["'self'"],
+            frameSrc: ["'self'", "https://*.google.com", "https://*.google.se"],
         },
     },
 }));
@@ -58,7 +59,7 @@ app.use(express.static(path.join(__dirname, '/')));
 let currentLocation = {
     address: "Tandådalen",
     city: "Sälen",
-    mapLink: "https://www.google.com/maps/place/61%C2%B010'25.5%22N+13%C2%B000'26.4%22E/@61.1739025,13.0115595,749m/data=!3m1!1e3!4m4!3m3!8m2!3d61.173735!4d13.007344?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoASAFQAw%3D%3D"
+    mapLink: "https://maps.google.com/maps?q=61.173735,13.007344&z=15&output=embed"
 };
 
 // Middleware to check if user is authenticated

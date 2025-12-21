@@ -61,8 +61,8 @@
         <p id="status" class="text-gray-400 text-sm h-6 text-center"></p>
 
         <div class="w-full max-w-sm border-t border-gray-800 pt-8">
-            <p class="mb-2 text-gray-500 text-sm text-center">Eller klistra in länk manuellt:</p>
-            <input type="text" id="manual-link" placeholder="https://maps.google.com..."
+            <p class="mb-2 text-gray-500 text-sm text-center">Eller klistra in embed-länk manuellt:</p>
+            <input type="text" id="manual-link" placeholder="https://maps.google.com/maps?q=..."
                 class="w-full bg-gray-900 border border-gray-700 p-4 rounded-lg mb-4 text-white focus:outline-none focus:border-pink-500">
             <button onclick="sendManualLink()"
                 class="w-full py-4 border border-pink-500 text-pink-500 hover:bg-pink-500 hover:text-white font-bold rounded-lg transition-colors">
@@ -143,8 +143,8 @@
                 (position) => {
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
-                    // Create exact Google Maps coordinate link
-                    const link = `https://www.google.com/maps?q=${lat},${lon}`;
+                    // Create embeddable Google Maps link
+                    const link = `https://maps.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
                     updateServer(link);
                 },
                 (error) => {

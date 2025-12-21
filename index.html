@@ -375,12 +375,12 @@
                         <span class="text-gray-500 text-xl md:text-2xl font-sans font-bold">Sälen</span>
                     </address>
 
-                    <a id="location-link"
-                        href="https://www.google.com/maps/place/61%C2%B010'25.5%22N+13%C2%B000'26.4%22E/@61.1739025,13.0115595,749m/data=!3m1!1e3!4m4!3m3!8m2!3d61.173735!4d13.007344?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoASAFQAw%3D%3D"
-                        target="_blank"
-                        class="inline-block bg-white text-black font-display text-xl px-10 py-4 hover:bg-neon-cyan transition-colors uppercase tracking-widest">
-                        Visa Karta
-                    </a>
+                    <iframe id="location-frame"
+                        src="https://maps.google.com/maps?q=61.173735,13.007344&z=15&output=embed" width="100%"
+                        height="450" style="border:0; border-radius: 1rem;" allowfullscreen="" loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        class="shadow-[0_0_20px_rgba(0,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,0,255,0.5)] transition-shadow duration-500">
+                    </iframe>
 
                 </div>
             </div>
@@ -422,15 +422,15 @@
 
                 // Only update the link dynamically
                 if (data.mapLink) {
-                    const linkEl = document.getElementById('location-link');
+                    const frameEl = document.getElementById('location-frame');
 
-                    linkEl.href = data.mapLink;
-
-                    // Visual feedback check
-                    if (linkEl.getAttribute('data-last') !== data.mapLink) {
-                        linkEl.innerText = "VISA KARTA (NY!)";
-                        setTimeout(() => linkEl.innerText = "VISA KARTA", 3000);
-                        linkEl.setAttribute('data-last', data.mapLink);
+                    // iframe src update - avoid reloading if same
+                    const currentSrc = frameEl.getAttribute('src');
+                    if (currentSrc !== data.mapLink) {
+                        frameEl.src = data.mapLink;
+                        // Add a flash effect or something to indicate update?
+                        frameEl.classList.add('animate-pulse');
+                        setTimeout(() => frameEl.classList.remove('animate-pulse'), 2000);
                     }
                 }
             } catch (e) {
