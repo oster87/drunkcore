@@ -111,8 +111,39 @@ app.post('/api/location', isAuthenticated, (req, res) => {
         try {
             const url = new URL(mapLink);
             if (url.protocol === 'http:' || url.protocol === 'https:') {
-                currentLocation.mapLink = mapLink;
-                console.log("Map Link updated to:", currentLocation.mapLink);
+                let finalLink = mapLink;
+
+                // Auto-convert standard Google Maps links to Embed links
+                // Check if it's a google maps link (any TLD)
+                if (mapLink.includes('google.') && mapLink.includes('/maps')) {
+                    // Decode in case characters like @ are encoded
+                    const decodedLink = decodeURIComponent(mapLink);
+                    console.log("Processing Map Link:", decodedLink);
+
+                    // Try to find coordinates @lat,lon
+                    const coordMatch = decodedLink.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+                    if (coordMatch) {
+                        const [_, lat, lon] = coordMatch;
+                        console.log("Found coordinates:", lat, lon);
+                        finalLink = `https://maps.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
+                    } else {
+                        // Try to find place name
+                        const placeMatch = decodedLink.match(/\/maps\/place\/([^/]+)/);
+                        if (placeMatch && placeMatch[1]) {
+                            // Extract pretty name or encoded string
+                            console.log("Found place:", placeMatch[1]);
+                            finalLink = `https://maps.google.com/maps?q=${placeMatch[1]}&z=15&output=embed`;
+                        } else if (!mapLink.includes('output=embed')) {
+                            // If it's a search link like maps?q=... just append output=embed
+                            if (mapLink.includes('?q=')) {
+                                finalLink = mapLink + '&output=embed';
+                            }
+                        }
+                    }
+                }
+
+                currentLocation.mapLink = finalLink;
+                console.log("Map Link processed:", mapLink, "->", currentLocation.mapLink);
                 return res.json({ message: "Link updated successfully", data: currentLocation });
             }
         } catch (e) {
