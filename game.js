@@ -33,10 +33,13 @@ const HazeHunterGame = (() => {
     };
 
     function loadHighScores() {
-        const savedScores = localStorage.getItem('drunkCodeSalenScores');
-        if (savedScores) {
-            highScores = JSON.parse(savedScores);
-        }
+        fetch('/api/highscores')
+            .then(res => res.json())
+            .then(data => {
+                highScores = data;
+                renderHighScores(); // Re-render when data arrives
+            })
+            .catch(err => console.error("Error loading high scores:", err));
     }
 
     // Input Listeners
@@ -498,14 +501,21 @@ const HazeHunterGame = (() => {
             date: new Date().toLocaleDateString()
         };
 
-        highScores.push(newScore);
-        highScores.sort((a, b) => b.score - a.score);
-        highScores = highScores.slice(0, 5);
-
-        localStorage.setItem('drunkCodeSalenScores', JSON.stringify(highScores));
-        playerName = '';
-        gameState = 'start';
-        renderUI();
+        fetch('/api/highscore', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newScore)
+        })
+            .then(res => res.json())
+            .then(updatedScores => {
+                highScores = updatedScores;
+                playerName = '';
+                gameState = 'start';
+                renderUI();
+            })
+            .catch(err => console.error("Failed to save score:", err));
     };
 
     // UI Rendering (Vanilla JS replacement for React JSX)

@@ -5,6 +5,8 @@ const cors = require('cors'); // Kept for now, but configured or removed if not 
 // I'll keep it but restrict to same origin or just standard. 
 // Actually, if it's served statically from the same server, we don't strictly need CORS for the frontend itself.
 const path = require('path');
+const fs = require('fs');
+const HIGH_SCORES_FILE = path.join(__dirname, 'highscores.json');
 require('dotenv').config();
 const helmet = require('helmet');
 const session = require('express-session');
@@ -161,6 +163,120 @@ app.post('/api/location', isAuthenticated, (req, res) => {
     }
 
     return res.json({ message: "Data updated successfully", data: eventData });
+});
+
+// GET High Scores
+app.get('/api/highscores', (req, res) => {
+    fs.readFile(HIGH_SCORES_FILE, 'utf8', (err, data) => {
+        if (err) {
+            // If file doesn't exist, return empty array
+            if (err.code === 'ENOENT') {
+                return res.json([]);
+            }
+            console.error("Error reading high scores:", err);
+            return res.status(500).json({ message: "Error reading high scores" });
+        }
+        try {
+            let scores = JSON.parse(data);
+            // On read, ensure they have IDs too just in case
+            let changed = false;
+            scores = scores.map(s => {
+                if (!s.id) {
+                    s.id = Date.now().toString(36) + Math.random().toString(36).substr(2);
+                    changed = true;
+                }
+                return s;
+            });
+
+            if (changed) {
+                fs.writeFile(HIGH_SCORES_FILE, JSON.stringify(scores, null, 2), () => { });
+            }
+
+            res.json(scores);
+        } catch (parseErr) {
+            console.error("Error parsing high scores:", parseErr);
+            res.json([]);
+        }
+    });
+});
+
+// POST High Score
+app.post('/api/highscore', (req, res) => {
+    const { name, score, date } = req.body;
+
+    if (!name || score === undefined) {
+        return res.status(400).json({ message: "Invalid score data" });
+    }
+
+    const newScore = {
+        id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+        name,
+        score: parseInt(score),
+        date: date || new Date().toLocaleDateString()
+    };
+
+    fs.readFile(HIGH_SCORES_FILE, 'utf8', (err, data) => {
+        let scores = [];
+        if (!err) {
+            try {
+                scores = JSON.parse(data);
+                // Ensure existing scores have IDs (migration)
+                scores = scores.map(s => {
+                    if (!s.id) s.id = Date.now().toString(36) + Math.random().toString(36).substr(2);
+                    return s;
+                });
+            } catch (e) {
+                console.error("Error parsing high scores file, resetting:", e);
+                scores = [];
+            }
+        }
+
+        scores.push(newScore);
+        // Sort descending
+        scores.sort((a, b) => b.score - a.score);
+        // Keep top 5
+        scores = scores.slice(0, 5);
+
+        // Keep IDs if we slice? Yes, because we slice the sorted array.
+
+        fs.writeFile(HIGH_SCORES_FILE, JSON.stringify(scores, null, 2), (writeErr) => {
+            if (writeErr) {
+                console.error("Error writing high scores:", writeErr);
+                return res.status(500).json({ message: "Failed to save score" });
+            }
+            res.json(scores);
+        });
+    });
+});
+
+// DELETE High Score (Protected)
+app.delete('/api/highscore/:id', isAuthenticated, (req, res) => {
+    const { id } = req.params;
+
+    fs.readFile(HIGH_SCORES_FILE, 'utf8', (err, data) => {
+        if (err) {
+            return res.status(500).json({ message: "Error reading high scores" });
+        }
+
+        try {
+            let scores = JSON.parse(data);
+            const initialLength = scores.length;
+            scores = scores.filter(s => s.id !== id);
+
+            if (scores.length === initialLength) {
+                return res.status(404).json({ message: "Score not found" });
+            }
+
+            fs.writeFile(HIGH_SCORES_FILE, JSON.stringify(scores, null, 2), (writeErr) => {
+                if (writeErr) {
+                    return res.status(500).json({ message: "Failed to save high scores" });
+                }
+                res.json({ message: "Score deleted", scores });
+            });
+        } catch (e) {
+            res.status(500).json({ message: "Error processing high scores" });
+        }
+    });
 });
 
 // Start server
