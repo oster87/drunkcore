@@ -56,10 +56,11 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '/')));
 
 // In-memory storage
-let currentLocation = {
+let eventData = {
     address: "Tandådalen",
     city: "Sälen",
-    mapLink: "https://maps.google.com/maps?q=61.173735,13.007344&z=15&output=embed&t=k"
+    mapLink: "https://maps.google.com/maps?q=61.173735,13.007344&z=15&output=embed&t=k",
+    startTime: "12:00"
 };
 
 // Middleware to check if user is authenticated
@@ -98,13 +99,19 @@ app.post('/api/logout', (req, res) => {
 // GET location (Public)
 app.get('/api/location', (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
-    res.json(currentLocation);
+    res.json(eventData);
 });
 
 // POST location (Protected)
 app.post('/api/location', isAuthenticated, (req, res) => {
-    const { mapLink } = req.body;
+    const { mapLink, startTime } = req.body;
 
+    // Update Time if provided
+    if (startTime) {
+        eventData.startTime = startTime;
+    }
+
+    // Update Map Link if provided
     if (mapLink) {
         // Basic input validation/sanitization
         // Ensure it looks like a URL
@@ -145,16 +152,15 @@ app.post('/api/location', isAuthenticated, (req, res) => {
                     }
                 }
 
-                currentLocation.mapLink = finalLink;
-                console.log("Map Link processed:", mapLink, "->", currentLocation.mapLink);
-                return res.json({ message: "Link updated successfully", data: currentLocation });
+                eventData.mapLink = finalLink;
+                console.log("Map Link processed:", mapLink, "->", eventData.mapLink);
             }
         } catch (e) {
             // Invalid URL
         }
     }
 
-    res.status(400).json({ message: "Invalid URL provided" });
+    return res.json({ message: "Data updated successfully", data: eventData });
 });
 
 // Start server

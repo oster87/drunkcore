@@ -220,13 +220,7 @@
     <!-- Main Poster Section -->
     <section class="relative z-20 min-h-screen flex flex-col items-center justify-center text-center px-4 py-20">
 
-        <!-- Floating Elements -->
-        <div class="absolute top-1/4 left-10 md:left-1/4 animate-bounce hidden md:block opacity-50">
-            <i data-lucide="snowflake" class="w-12 h-12 text-neon-cyan"></i>
-        </div>
-        <div class="absolute bottom-1/4 right-10 md:right-1/4 animate-pulse hidden md:block opacity-50">
-            <i data-lucide="disc" class="w-12 h-12 text-neon-pink"></i>
-        </div>
+
 
         <div class="space-y-4 mb-2 relative z-30">
             <!-- Brand / Organizer -->
@@ -293,7 +287,7 @@
                 class="bg-black/60 backdrop-blur-md border border-white/20 p-6 flex flex-col items-center group hover:border-neon-pink transition-colors">
                 <i data-lucide="clock"
                     class="w-8 h-8 text-neon-pink mb-2 group-hover:scale-110 transition-transform"></i>
-                <span class="font-display text-3xl">12:00</span>
+                <span id="start-time" class="font-display text-3xl">12:00</span>
                 <span class="text-sm uppercase text-gray-400">Till Sent</span>
             </div>
 
@@ -414,13 +408,20 @@
         }
 
         // Location Fetch Logic
-        async function fetchLocation() {
+        // Location & Time Fetch Logic
+        async function fetchEventData() {
             try {
                 const response = await fetch('/api/location');
                 if (!response.ok) throw new Error("Offline");
                 const data = await response.json();
 
-                // Only update the link dynamically
+                // Update start time if exists
+                if (data.startTime) {
+                    const timeEl = document.getElementById('start-time');
+                    if (timeEl) timeEl.innerText = data.startTime;
+                }
+
+                // Update map link if exists
                 if (data.mapLink) {
                     const frameEl = document.getElementById('location-frame');
 
@@ -439,8 +440,8 @@
         }
 
         // Fetch immediately and then poll faster
-        fetchLocation();
-        setInterval(fetchLocation, 2000);
+        fetchEventData();
+        setInterval(fetchEventData, 2000);
 
         lucide.createIcons();
 

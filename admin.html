@@ -69,6 +69,18 @@
                 SKICKA LÄNK
             </button>
         </div>
+
+        <div class="w-full max-w-sm border-t border-gray-800 pt-8">
+            <p class="mb-2 text-gray-500 text-sm text-center">Ändra Starttid:</p>
+            <div class="flex gap-2">
+                <input type="text" id="start-time-input" placeholder="12:00"
+                    class="w-full bg-gray-900 border border-gray-700 p-4 rounded-lg text-white focus:outline-none focus:border-neon-yellow text-center font-bold text-xl">
+                <button onclick="updateTime()"
+                    class="w-1/3 border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black font-bold rounded-lg transition-colors">
+                    SPARA
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -102,7 +114,7 @@
             }
         }
 
-        async function updateServer(mapLink) {
+        async function updateServer(payload) {
             const status = document.getElementById('status');
             status.innerText = "Skickar till servern...";
             status.className = "text-yellow-400 text-sm h-6 text-center";
@@ -111,11 +123,11 @@
                 const response = await fetch('/api/location', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ mapLink: mapLink })
+                    body: JSON.stringify(payload)
                 });
 
                 if (response.ok) {
-                    status.innerText = "✅ Platsen uppdaterad!";
+                    status.innerText = "✅ Uppdaterat!";
                     status.className = "text-green-400 text-sm h-6 font-bold text-center";
                     setTimeout(() => status.innerText = "", 3000);
                 } else if (response.status === 401) {
@@ -128,6 +140,12 @@
                 status.innerText = "❌ Kunde inte nå servern.";
                 status.className = "text-red-500 text-sm h-6 text-center";
             }
+        }
+
+        function updateTime() {
+            const timeVal = document.getElementById('start-time-input').value;
+            if (!timeVal) return;
+            updateServer({ startTime: timeVal });
         }
 
         function shareLocation() {
@@ -145,7 +163,7 @@
                     const lon = position.coords.longitude;
                     // Create embeddable Google Maps link with satellite view (t=k)
                     const link = `https://maps.google.com/maps?q=${lat},${lon}&z=15&output=embed&t=k`;
-                    updateServer(link);
+                    updateServer({ mapLink: link });
                 },
                 (error) => {
                     status.innerText = "❌ Kunde inte hämta GPS.";
@@ -161,7 +179,7 @@
         function sendManualLink() {
             const link = document.getElementById('manual-link').value;
             if (!link) return;
-            updateServer(link);
+            updateServer({ mapLink: link });
         }
     </script>
 </body>
