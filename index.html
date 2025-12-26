@@ -213,6 +213,10 @@
                     class="font-display text-xl uppercase tracking-wide hover:text-neon-cyan transition-colors">Info</a>
                 <a href="#location"
                     class="font-display text-xl uppercase tracking-wide hover:text-neon-cyan transition-colors">Plats</a>
+                <button onclick="HazeHunterGame.open()"
+                    class="font-display text-xl uppercase tracking-wide hover:text-neon-cyan transition-colors bg-neon-pink/20 px-4 py-1 rounded text-neon-pink hover:bg-neon-pink hover:text-white flex items-center gap-2">
+                    <i data-lucide="gamepad-2" class="w-5 h-5"></i> SPELA
+                </button>
             </div>
         </div>
     </nav>
@@ -523,6 +527,99 @@
 
         setInterval(updateCountdown, 1000);
         updateCountdown();
+    </script>
+    <!-- Game Modal -->
+    <div id="game-modal"
+        class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 text-slate-800 font-sans">
+        <div
+            class="relative w-full max-w-md h-[600px] bg-white rounded-lg overflow-hidden shadow-2xl border-4 border-blue-200">
+            <!-- Close Button -->
+            <button id="btn-close-modal"
+                class="absolute top-2 right-2 z-50 text-slate-800 bg-white/50 hover:bg-white rounded-full p-1 transition-colors">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+
+            <!-- Header -->
+            <div class="absolute top-4 w-full text-center z-10 pointer-events-none">
+                <h1 class="text-2xl font-black italic tracking-widest text-blue-900 drop-shadow-sm uppercase">
+                    Drunk Code: Sälen 2026
+                </h1>
+                <div id="game-score-display"
+                    class="text-xl mt-2 font-bold text-blue-600 bg-white/80 inline-block px-4 py-1 rounded-full shadow-sm">
+                    POÄNG: 0
+                </div>
+            </div>
+
+            <!-- Canvas -->
+            <canvas id="game-canvas" class="block w-full h-full bg-slate-100"></canvas>
+
+            <!-- Start Screen (Overlay) -->
+            <div id="screen-start"
+                class="absolute inset-0 flex flex-col items-center justify-center bg-blue-900/90 p-6 text-center backdrop-blur-sm">
+                <i data-lucide="mountain" class="w-16 h-16 mb-4 text-white animate-bounce"></i>
+                <h2 class="text-3xl font-black mb-2 text-white italic transform -skew-x-6">SÄLEN 2026</h2>
+                <div class="mb-8 text-blue-100 font-medium text-lg">
+                    Jaga <span class="font-bold text-orange-400">HAZE LAGER</span><br />
+                    Akta dig för <span class="text-green-400">🌲</span> & <span class="text-gray-400">🪨</span>
+                </div>
+
+                <button id="btn-start-game"
+                    class="flex items-center gap-2 px-8 py-4 bg-yellow-400 text-blue-900 font-black text-xl hover:bg-yellow-300 transition-transform hover:scale-105 rounded-full shadow-lg uppercase tracking-wide">
+                    <i data-lucide="play" class="w-6 h-6 fill-current"></i> KÖR!
+                </button>
+
+                <div id="highscore-container" class="mt-8 w-full bg-white/10 rounded-xl p-4 backdrop-blur-md hidden">
+                    <div
+                        class="flex items-center justify-center gap-2 mb-3 text-yellow-400 font-bold uppercase tracking-wider">
+                        <i data-lucide="trophy" class="w-4 h-4"></i> Topplista
+                    </div>
+                    <ul id="highscore-list" class="text-sm space-y-2"></ul>
+                </div>
+            </div>
+
+            <!-- Game Over Screen (Overlay) -->
+            <div id="screen-gameover"
+                class="hidden absolute inset-0 flex flex-col items-center justify-center bg-white/90 p-6 text-center border-4 border-red-500/50 backdrop-blur-sm">
+                <i data-lucide="snowflake" class="w-12 h-12 text-blue-300 mb-2 animate-spin-slow"></i>
+                <h2 class="text-4xl font-black mb-2 text-red-600 italic uppercase transform -rotate-2">KRASCH!</h2>
+                <p class="text-slate-600 mb-6 font-medium">Afterski nästa?</p>
+
+                <div class="bg-blue-50 p-6 rounded-2xl w-full mb-6 border-2 border-blue-100 shadow-inner">
+                    <p class="text-sm text-blue-400 font-bold uppercase tracking-wider">Slutpoäng</p>
+                    <p id="final-score" class="text-5xl font-black text-blue-600 mt-1">0</p>
+                </div>
+
+                <div class="w-full mb-4">
+                    <input type="text" id="player-name-input" placeholder="DITT NAMN" maxlength="12"
+                        class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-slate-800 text-center font-bold text-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 uppercase placeholder:text-slate-300 transition-all" />
+                </div>
+
+                <button id="btn-save-score"
+                    class="w-full py-4 bg-blue-600 text-white font-black text-lg hover:bg-blue-500 mb-3 rounded-xl shadow-lg shadow-blue-200 transition-all transform active:scale-95 uppercase">
+                    Spara & Spela Igen
+                </button>
+
+                <button id="btn-back-menu"
+                    class="text-slate-400 font-bold hover:text-slate-600 text-sm uppercase tracking-wide py-2">
+                    Tillbaka till menyn
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Controls Hint -->
+        <div
+            class="absolute bottom-10 text-white font-medium bg-black/50 px-4 py-2 rounded-full shadow-sm backdrop-blur pointer-events-none">
+            👈 Tryck vänster / höger för att svänga 👉
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+    <script>
+        // Init Game
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof HazeHunterGame !== 'undefined') {
+                HazeHunterGame.init();
+            }
+        });
     </script>
 </body>
 
