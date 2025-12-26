@@ -143,8 +143,21 @@
         }
 
         function updateTime() {
-            const timeVal = document.getElementById('start-time-input').value;
+            let timeVal = document.getElementById('start-time-input').value.trim();
             if (!timeVal) return;
+
+            // Smart formatting
+            // Replace dots with colons (e.g. 13.00 -> 13:00)
+            timeVal = timeVal.replace('.', ':');
+
+            // If only digits (e.g. "13" or "09"), append :00
+            if (/^\d{1,2}$/.test(timeVal)) {
+                timeVal = `${timeVal}:00`;
+            }
+
+            // Update input field to show formatted value
+            document.getElementById('start-time-input').value = timeVal;
+
             updateServer({ startTime: timeVal });
         }
 
