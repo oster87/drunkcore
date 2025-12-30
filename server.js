@@ -204,46 +204,77 @@ const crypto = require('crypto');
 const GAME_SECRET = process.env.GAME_SECRET || 'dev_secret_key_change_in_prod';
 const MAX_POINTS_PER_SEC = 20; // Reasonable limit based on game mechanics
 
-// ... (existing imports)
+// Active Game Sessions (Memory Store)
+// Map<sessionId, { startTime: number, ip: string }>
+const activeSessions = new Map();
+
+// Cleanup old sessions every hour
+setInterval(() => {
+    const now = Date.now();
+    for (const [id, session] of activeSessions.entries()) {
+        if (now - session.startTime > 3600000) { // 1 hour expiration
+            activeSessions.delete(id);
+        }
+    }
+}, 3600000);
+
 
 // GET Start Game Token
 app.get('/api/game/start', (req, res) => {
+    const sessionId = crypto.randomBytes(16).toString('hex');
     const timestamp = Date.now();
+
+    // Store session
+    activeSessions.set(sessionId, {
+        startTime: timestamp,
+        ip: req.ip
+    });
+
+    // Create signature of the sessionId to ensure we issued it (extra layer, though map check is cleaner)
     const signature = crypto.createHmac('sha256', GAME_SECRET)
-        .update(timestamp.toString())
+        .update(sessionId)
         .digest('hex');
-    res.json({ startTime: timestamp, signature });
+
+    res.json({ sessionId, signature });
 });
 
 // POST High Score
 app.post('/api/highscore', (req, res) => {
-    const { name, score, date, startTime, signature } = req.body;
+    const { name, score, date, sessionId, signature } = req.body;
 
     if (!name || score === undefined) {
         return res.status(400).json({ message: "Invalid score data" });
     }
 
-    // 1. Verify Signature
-    if (!startTime || !signature) {
-        return res.status(403).json({ message: "Missing game token" });
+    // 1. Verify Session Presence & Signature
+    if (!sessionId || !signature) {
+        return res.status(403).json({ message: "Missing game session" });
     }
 
+    // Check if session exists in memory (One-Time Token logic)
+    const session = activeSessions.get(sessionId);
+    if (!session) {
+        // Session not found (expired, invalid, or ALREADY USED)
+        console.warn(`Invalid or reused session attempt from IP: ${req.ip}`);
+        return res.status(403).json({ message: "Invalid or expired game session" });
+    }
+
+    // Verify signature matches sessionId
     const expectedSignature = crypto.createHmac('sha256', GAME_SECRET)
-        .update(startTime.toString())
+        .update(sessionId)
         .digest('hex');
 
     if (signature !== expectedSignature) {
-        console.warn(`Invalid signature attempt from IP: ${req.ip}`);
-        return res.status(403).json({ message: "Invalid game token" });
+        return res.status(403).json({ message: "Invalid token signature" });
     }
 
     // 2. Verify Time/Score Feasibility
     const now = Date.now();
-    const durationSeconds = (now - parseInt(startTime)) / 1000;
+    // Use TRUSTED server-side start time
+    const durationSeconds = (now - session.startTime) / 1000;
 
-    // Allow a small grace buffer (e.g. 2 seconds) for network latency/loading
-    // Calculate max possible score for this duration
-    // Adjust logic: If score is 0, it's always valid.
+    // Consume session IMMEDIATELY to prevent replay
+    activeSessions.delete(sessionId);
 
     // We expect at least minimal duration for any points.
     if (durationSeconds < 0) {
@@ -261,7 +292,8 @@ app.post('/api/highscore', (req, res) => {
 
     const newScore = {
         id: Date.now().toString(36) + Math.random().toString(36).substr(2),
-        name,
+        // Sanitize name a bit more?
+        name: name.substring(0, 20), // Max length enforce
         score: parseInt(score),
         date: date || new Date().toLocaleDateString()
     };

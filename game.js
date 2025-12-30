@@ -513,7 +513,7 @@ const HazeHunterGame = (() => {
             name: name,
             score: score,
             date: new Date().toLocaleDateString(),
-            startTime: gameToken ? gameToken.startTime : null,
+            sessionId: gameToken ? gameToken.sessionId : null,
             signature: gameToken ? gameToken.signature : null
         };
 
