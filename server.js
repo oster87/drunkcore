@@ -221,6 +221,7 @@ setInterval(() => {
 
 // GET Start Game Token
 app.get('/api/game/start', (req, res) => {
+    res.setHeader('Cache-Control', 'no-store');
     const sessionId = crypto.randomBytes(16).toString('hex');
     const timestamp = Date.now();
 

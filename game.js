@@ -211,9 +211,12 @@ const HazeHunterGame = (() => {
     let gameToken = null;
 
     const startGame = () => {
-        // Fetch start token
-        fetch('/api/game/start')
-            .then(res => res.json())
+        // Fetch start token with cache busting
+        fetch(`/api/game/start?t=${Date.now()}`)
+            .then(res => {
+                if (!res.ok) throw new Error("Server error");
+                return res.json();
+            })
             .then(data => {
                 gameToken = data;
                 console.log("Game token received:", gameToken);
