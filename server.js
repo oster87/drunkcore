@@ -65,12 +65,19 @@ let eventData = {
     startTime: "12:00"
 };
 
-// Middleware to check if user is authenticated
+// Global Active Admin Session (King of the Hill)
+let activeAdminSessionId = null;
+
+// Middleware to check if user is authenticated AND the current active admin
 const isAuthenticated = (req, res, next) => {
     if (req.session && req.session.entryGranted) {
-        return next();
+        // Valid session, but is it the *current* admin session?
+        if (req.sessionID === activeAdminSessionId) {
+            return next();
+        }
+        console.warn(`Blocked stale session attempt: ${req.sessionID} (Active: ${activeAdminSessionId})`);
     }
-    return res.status(401).json({ message: 'Unauthorized' });
+    return res.status(401).json({ message: 'Unauthorized or session overridden by new login' });
 };
 
 // --- ROUTES ---
@@ -86,6 +93,11 @@ app.post('/api/login', loginLimiter, (req, res) => {
 
     if (username && username.toLowerCase() === adminUser && password === adminPass) {
         req.session.entryGranted = true;
+
+        // Take over the throne
+        activeAdminSessionId = req.sessionID;
+        console.log(`New Admin Login. Active Session ID set to: ${activeAdminSessionId}`);
+
         return res.json({ message: 'Login successful' });
     }
 
