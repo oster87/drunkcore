@@ -291,6 +291,12 @@ app.post('/api/highscore', (req, res) => {
         return res.status(403).json({ message: "Score validation failed" });
     }
 
+    // 3. Verify Score Granularity (Must be multiple of 10)
+    if (score % 10 !== 0) {
+        console.warn(`Invalid score value (not multiple of 10): ${score}`);
+        return res.status(403).json({ message: "Invalid score value" });
+    }
+
     const newScore = {
         id: Date.now().toString(36) + Math.random().toString(36).substr(2),
         // Sanitize name a bit more?
