@@ -208,7 +208,18 @@ const HazeHunterGame = (() => {
 
 
 
+    let gameToken = null;
+
     const startGame = () => {
+        // Fetch start token
+        fetch('/api/game/start')
+            .then(res => res.json())
+            .then(data => {
+                gameToken = data;
+                console.log("Game token received:", gameToken);
+            })
+            .catch(err => console.error("Error fetching game token", err));
+
         gameState = 'playing';
         score = 0;
         speedMultiplier = 1;
@@ -498,7 +509,9 @@ const HazeHunterGame = (() => {
         const newScore = {
             name: name,
             score: score,
-            date: new Date().toLocaleDateString()
+            date: new Date().toLocaleDateString(),
+            startTime: gameToken ? gameToken.startTime : null,
+            signature: gameToken ? gameToken.signature : null
         };
 
         fetch('/api/highscore', {
@@ -508,14 +521,23 @@ const HazeHunterGame = (() => {
             },
             body: JSON.stringify(newScore)
         })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    return res.json().then(data => { throw new Error(data.message || 'Error') });
+                }
+                return res.json();
+            })
             .then(updatedScores => {
                 highScores = updatedScores;
                 playerName = '';
                 gameState = 'start';
+                gameToken = null; // Reset token
                 renderUI();
             })
-            .catch(err => console.error("Failed to save score:", err));
+            .catch(err => {
+                console.error("Failed to save score:", err);
+                alert("Could not save score: " + err.message);
+            });
     };
 
     // UI Rendering (Vanilla JS replacement for React JSX)
@@ -533,6 +555,7 @@ const HazeHunterGame = (() => {
             document.getElementById('final-score').innerText = score;
         }
     };
+
 
     const renderHighScores = () => {
         const list = document.getElementById('highscore-list');

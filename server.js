@@ -200,12 +200,63 @@ app.get('/api/highscores', (req, res) => {
     });
 });
 
+const crypto = require('crypto');
+const GAME_SECRET = process.env.GAME_SECRET || 'dev_secret_key_change_in_prod';
+const MAX_POINTS_PER_SEC = 20; // Reasonable limit based on game mechanics
+
+// ... (existing imports)
+
+// GET Start Game Token
+app.get('/api/game/start', (req, res) => {
+    const timestamp = Date.now();
+    const signature = crypto.createHmac('sha256', GAME_SECRET)
+        .update(timestamp.toString())
+        .digest('hex');
+    res.json({ startTime: timestamp, signature });
+});
+
 // POST High Score
 app.post('/api/highscore', (req, res) => {
-    const { name, score, date } = req.body;
+    const { name, score, date, startTime, signature } = req.body;
 
     if (!name || score === undefined) {
         return res.status(400).json({ message: "Invalid score data" });
+    }
+
+    // 1. Verify Signature
+    if (!startTime || !signature) {
+        return res.status(403).json({ message: "Missing game token" });
+    }
+
+    const expectedSignature = crypto.createHmac('sha256', GAME_SECRET)
+        .update(startTime.toString())
+        .digest('hex');
+
+    if (signature !== expectedSignature) {
+        console.warn(`Invalid signature attempt from IP: ${req.ip}`);
+        return res.status(403).json({ message: "Invalid game token" });
+    }
+
+    // 2. Verify Time/Score Feasibility
+    const now = Date.now();
+    const durationSeconds = (now - parseInt(startTime)) / 1000;
+
+    // Allow a small grace buffer (e.g. 2 seconds) for network latency/loading
+    // Calculate max possible score for this duration
+    // Adjust logic: If score is 0, it's always valid.
+
+    // We expect at least minimal duration for any points.
+    if (durationSeconds < 0) {
+        return res.status(403).json({ message: "Time travel detected" });
+    }
+
+    // Example calculation: MAX_POINTS_PER_SEC * duration. 
+    // + buffer for safety.
+    const maxPossible = Math.ceil((durationSeconds + 2) * MAX_POINTS_PER_SEC);
+
+    if (score > maxPossible) {
+        console.warn(`Impossible score attempt: ${score} points in ${durationSeconds.toFixed(1)}s`);
+        return res.status(403).json({ message: "Score validation failed" });
     }
 
     const newScore = {
