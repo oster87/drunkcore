@@ -278,8 +278,20 @@ app.post('/api/game/heartbeat', (req, res) => {
 app.post('/api/highscore', (req, res) => {
     const { name, score, date, sessionId, signature } = req.body;
 
-    if (!name || score === undefined) {
-        return res.status(400).json({ message: "Invalid score data" });
+    // --- 0. STRICT INPUT SANITIZATION ---
+
+    // Check 1: Score must be a non-negative integer
+    // We allow 0. We reject strings that aren't clean numbers.
+    if (typeof score !== 'number' || !Number.isInteger(score) || score < 0) {
+        console.warn(`Invalid score format from IP ${req.ip}:`, score);
+        return res.status(400).json({ message: "Invalid score format" });
+    }
+
+    // Check 2: Name must be a string and match whitelist (Letters, Numbers, Space, - _)
+    // This blocks HTML, Script tags, Binary data, etc.
+    if (typeof name !== 'string' || !/^[a-zA-Z0-9åäöÅÄÖ\s\-_]{1,20}$/.test(name)) {
+        console.warn(`Invalid name format from IP ${req.ip}:`, name);
+        return res.status(400).json({ message: "Invalid name (Endast bokstäver/siffror)" });
     }
 
     // 1. Verify Session Presence & Signature
