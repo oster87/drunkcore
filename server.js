@@ -229,15 +229,37 @@ app.get('/api/game/start', (req, res) => {
     // Store session
     activeSessions.set(sessionId, {
         startTime: timestamp,
-        ip: req.ip
+        ip: req.ip,
+        heartbeats: 0,
+        lastHeartbeat: timestamp
     });
 
-    // Create signature of the sessionId to ensure we issued it (extra layer, though map check is cleaner)
+    // Create signature of the sessionId
     const signature = crypto.createHmac('sha256', GAME_SECRET)
         .update(sessionId)
         .digest('hex');
 
     res.json({ sessionId, signature });
+});
+
+// POST Game Heartbeat
+app.post('/api/game/heartbeat', (req, res) => {
+    const { sessionId, signature } = req.body;
+    if (!sessionId || !signature) return res.sendStatus(400);
+
+    const session = activeSessions.get(sessionId);
+    if (!session) return res.sendStatus(403);
+
+    // Verify signature
+    const expectedSignature = crypto.createHmac('sha256', GAME_SECRET)
+        .update(sessionId)
+        .digest('hex');
+    if (signature !== expectedSignature) return res.sendStatus(403);
+
+    // Update heartbeats
+    session.heartbeats += 1;
+    session.lastHeartbeat = Date.now();
+    res.sendStatus(200);
 });
 
 // POST High Score
@@ -270,26 +292,21 @@ app.post('/api/highscore', (req, res) => {
         return res.status(403).json({ message: "Invalid token signature" });
     }
 
-    // 2. Verify Time/Score Feasibility
-    const now = Date.now();
-    // Use TRUSTED server-side start time
-    const durationSeconds = (now - session.startTime) / 1000;
+    // 2. Verify Time/Score Feasibility (HEARTBEAT BASED)
+    const HEARTBEAT_INTERVAL_SEC = 5;
+    // Base allowance (e.g. 10s) + credit for each heartbeat received
+    // + 1 extra heartbeat buffer for race conditions/timing
+    const creditedDuration = 10 + ((session.heartbeats + 1) * HEARTBEAT_INTERVAL_SEC);
 
     // Consume session IMMEDIATELY to prevent replay
     activeSessions.delete(sessionId);
 
-    // We expect at least minimal duration for any points.
-    if (durationSeconds < 0) {
-        return res.status(403).json({ message: "Time travel detected" });
-    }
-
     // Example calculation: MAX_POINTS_PER_SEC * duration. 
-    // + buffer for safety.
-    const maxPossible = Math.ceil((durationSeconds + 2) * MAX_POINTS_PER_SEC);
+    const maxPossible = Math.ceil(creditedDuration * MAX_POINTS_PER_SEC);
 
     if (score > maxPossible) {
-        console.warn(`Impossible score attempt: ${score} points in ${durationSeconds.toFixed(1)}s`);
-        return res.status(403).json({ message: "Score validation failed" });
+        console.warn(`Impossible score attempt (Heartbeat Check): ${score} points > ${maxPossible} max`);
+        return res.status(403).json({ message: "Score validation failed (Keep tab active!)" });
     }
 
     // 3. Verify Score Granularity (Must be multiple of 10)

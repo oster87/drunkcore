@@ -206,9 +206,21 @@ const HazeHunterGame = (() => {
         ctx.restore();
     };
 
-
-
     let gameToken = null;
+
+    let heartbeatInterval = null;
+
+    const startHeartbeat = () => {
+        if (heartbeatInterval) clearInterval(heartbeatInterval);
+        heartbeatInterval = setInterval(() => {
+            if (!gameToken) return;
+            fetch('/api/game/heartbeat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(gameToken)
+            }).catch(e => console.error("Heartbeat failed", e));
+        }, 5000); // 5 seconds
+    };
 
     const startGame = () => {
         // Fetch start token with cache busting
@@ -220,6 +232,7 @@ const HazeHunterGame = (() => {
             .then(data => {
                 gameToken = data;
                 console.log("Game token received:", gameToken);
+                startHeartbeat(); // Start sending heartbeats
             })
             .catch(err => {
                 console.error("Error fetching game token", err);
@@ -251,6 +264,17 @@ const HazeHunterGame = (() => {
         // Start Loop
         if (requestRef) cancelAnimationFrame(requestRef);
         requestRef = requestAnimationFrame(gameLoop);
+    };
+
+    const handleGameOver = () => {
+        cancelAnimationFrame(requestRef);
+        if (heartbeatInterval) {
+            clearInterval(heartbeatInterval); // Stop heartbeats
+            heartbeatInterval = null;
+        }
+        console.log("Game Over - stopped heartbeats");
+        gameState = 'gameover';
+        renderUI();
     };
 
     const gameLoop = () => {
@@ -501,11 +525,7 @@ const HazeHunterGame = (() => {
         requestRef = requestAnimationFrame(gameLoop);
     };
 
-    const handleGameOver = () => {
-        cancelAnimationFrame(requestRef);
-        gameState = 'gameover';
-        renderUI();
-    };
+
 
     const saveScore = () => {
         const input = document.getElementById('player-name-input');
