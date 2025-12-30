@@ -306,15 +306,21 @@ app.post('/api/highscore', (req, res) => {
 
     // 2. Verify Time/Score Feasibility (HEARTBEAT BASED)
     const HEARTBEAT_INTERVAL_SEC = 5;
-    // Base allowance (e.g. 10s) + credit for each heartbeat received
-    // + 1 extra heartbeat buffer for race conditions/timing
-    const creditedDuration = 10 + ((session.heartbeats + 1) * HEARTBEAT_INTERVAL_SEC);
+    // Formula: (hb * 5) + 7. Stricter buffer.
+    const creditedDuration = (session.heartbeats * HEARTBEAT_INTERVAL_SEC) + 7;
 
     // Consume session IMMEDIATELY to prevent replay
     activeSessions.delete(sessionId);
 
+    // Wall Clock Check (Physical Upper Bound)
+    const wallClockDuration = (Date.now() - session.startTime) / 1000;
+    if (wallClockDuration < 0) return res.status(403).json({ message: "Time travel detected" });
+
+    // Valid is min of Heartbeat Credit AND Wall Clock (+2s buffer)
+    const validDuration = Math.min(wallClockDuration + 2, creditedDuration);
+
     // Example calculation: MAX_POINTS_PER_SEC * duration. 
-    const maxPossible = Math.ceil(creditedDuration * MAX_POINTS_PER_SEC);
+    const maxPossible = Math.ceil(validDuration * MAX_POINTS_PER_SEC);
 
     if (score > maxPossible) {
         console.warn(`Impossible score attempt (Heartbeat Check): ${score} points > ${maxPossible} max`);
