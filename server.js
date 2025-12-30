@@ -303,6 +303,7 @@ app.post('/api/highscore', (req, res) => {
     const session = activeSessions.get(sessionId);
     if (!session) {
         // Session not found (expired, invalid, or ALREADY USED)
+        // Only warn here, don't ban immediately as it could be a race condition/network issue for legit users
         console.warn(`Invalid or reused session attempt from IP: ${req.ip}`);
         return res.status(403).json({ message: "Invalid or expired game session" });
     }
@@ -326,7 +327,9 @@ app.post('/api/highscore', (req, res) => {
 
     // Wall Clock Check (Physical Upper Bound)
     const wallClockDuration = (Date.now() - session.startTime) / 1000;
-    if (wallClockDuration < 0) return res.status(403).json({ message: "Time travel detected" });
+    if (wallClockDuration < 0) {
+        return res.status(403).json({ message: "Time travel detected" });
+    }
 
     // Valid is min of Heartbeat Credit AND Wall Clock (+2s buffer)
     const validDuration = Math.min(wallClockDuration + 2, creditedDuration);
@@ -339,6 +342,7 @@ app.post('/api/highscore', (req, res) => {
         return res.status(403).json({ message: "Score validation failed (Keep tab active!)" });
     }
 
+    // 3. Verify Score Granularity (Must be multiple of 10)
     // 3. Verify Score Granularity (Must be multiple of 10)
     if (score % 10 !== 0) {
         console.warn(`Invalid score value (not multiple of 10): ${score}`);

@@ -527,10 +527,21 @@ const HazeHunterGame = (() => {
 
 
 
+    let isSaving = false;
+
     const saveScore = () => {
+        if (isSaving) return; // Prevent double clicks
+
         const input = document.getElementById('player-name-input');
         const name = input ? input.value : '';
         if (!name.trim()) return;
+
+        isSaving = true;
+        const btnSave = document.getElementById('btn-save-score');
+        if (btnSave) {
+            btnSave.disabled = true;
+            btnSave.innerText = "Sparar...";
+        }
 
         const newScore = {
             name: name,
@@ -563,6 +574,13 @@ const HazeHunterGame = (() => {
             .catch(err => {
                 console.error("Failed to save score:", err);
                 alert("Could not save score: " + err.message);
+            })
+            .finally(() => {
+                isSaving = false;
+                if (btnSave) {
+                    btnSave.disabled = false;
+                    btnSave.innerText = "SPARA & SPELA IGEN";
+                }
             });
     };
 
