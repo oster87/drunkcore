@@ -319,8 +319,9 @@ app.post('/api/highscore', (req, res) => {
 
     // 2. Verify Time/Score Feasibility (HEARTBEAT BASED)
     const HEARTBEAT_INTERVAL_SEC = 5;
-    // Formula: (hb * 5) + 7. Stricter buffer.
-    const creditedDuration = (session.heartbeats * HEARTBEAT_INTERVAL_SEC) + 7;
+    // Formula: (hb * 5) + 30. Generous buffer to account for lag/missed pings.
+    // Allows ~30s of play (approx 400-600 pts) without heartbeats.
+    const creditedDuration = (session.heartbeats * HEARTBEAT_INTERVAL_SEC) + 30;
 
     // Consume session IMMEDIATELY to prevent replay
     activeSessions.delete(sessionId);
