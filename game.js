@@ -218,7 +218,10 @@ const HazeHunterGame = (() => {
                 gameToken = data;
                 console.log("Game token received:", gameToken);
             })
-            .catch(err => console.error("Error fetching game token", err));
+            .catch(err => {
+                console.error("Error fetching game token", err);
+                alert("VARNING: Kunde inte anslut till servern. Dina poäng kommer INTE sparas. Kontrollera din anslutning.");
+            });
 
         gameState = 'playing';
         score = 0;
