@@ -167,6 +167,7 @@ app.post('/api/location', isAuthenticated, (req, res) => {
 
 // GET High Scores
 app.get('/api/highscores', (req, res) => {
+    res.setHeader('Cache-Control', 'no-store');
     fs.readFile(HIGH_SCORES_FILE, 'utf8', (err, data) => {
         if (err) {
             // If file doesn't exist, return empty array
