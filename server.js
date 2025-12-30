@@ -215,7 +215,9 @@ app.get('/api/highscores', (req, res) => {
 
 const crypto = require('crypto');
 const GAME_SECRET = process.env.GAME_SECRET || 'dev_secret_key_change_in_prod';
-const MAX_POINTS_PER_SEC = 20; // Reasonable limit based on game mechanics
+// Game is frame-rate bound. High refresh rate monitors (144hz, 240hz) run the game faster.
+// 20 pts/sec is for 60hz. We need to allow much higher density for fast monitors.
+const MAX_POINTS_PER_SEC = 100;
 
 // Active Game Sessions (Memory Store)
 // Map<sessionId, { startTime: number, ip: string }>
