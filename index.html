@@ -276,7 +276,7 @@
         </div>
 
         <!-- Info Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 w-full max-w-4xl reveal">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-16 w-full max-w-7xl reveal">
             <!-- Box 1 -->
             <div
                 class="bg-black/60 backdrop-blur-md border border-white/20 p-6 flex flex-col items-center group hover:border-neon-cyan transition-colors">
@@ -302,6 +302,21 @@
                     class="w-8 h-8 text-neon-yellow mb-2 group-hover:scale-110 transition-transform"></i>
                 <span class="font-display text-3xl">GRATIS</span>
                 <span class="text-sm uppercase text-gray-400">Drop-in</span>
+            </div>
+
+            <!-- Box 4: Snow Depth (New) -->
+            <div
+                class="bg-black/60 backdrop-blur-md border border-white/20 p-6 flex flex-col items-center group hover:border-blue-400 transition-colors">
+                <i data-lucide="snowflake"
+                    class="w-8 h-8 text-blue-400 mb-2 group-hover:scale-110 transition-transform"></i>
+                <div class="flex items-baseline gap-1">
+                    <span id="snow-depth" class="font-display text-3xl">-</span>
+                    <span class="font-display text-xl">cm</span>
+                </div>
+                <div class="flex gap-3 text-xs uppercase text-gray-400 mt-1">
+                    <span>24h: <span id="snow-24" class="text-white">-</span></span>
+                    <span>72h: <span id="snow-72" class="text-white">-</span></span>
+                </div>
             </div>
         </div>
     </section>
@@ -443,9 +458,27 @@
             }
         }
 
+        async function fetchSnowData() {
+            try {
+                const response = await fetch('/api/snow');
+                if (!response.ok) return;
+                const data = await response.json();
+
+                if (data.depth !== "?") {
+                    document.getElementById('snow-depth').innerText = data.depth;
+                    document.getElementById('snow-24').innerText = data.snow24 + " cm";
+                    document.getElementById('snow-72').innerText = data.snow72 + " cm";
+                }
+            } catch (e) {
+                console.error("Failed to load snow data");
+            }
+        }
+
         // Fetch immediately and then poll faster
         fetchEventData();
+        fetchSnowData();
         setInterval(fetchEventData, 2000);
+        setInterval(fetchSnowData, 600000); // Create separate poll for snow (10 min)
 
         lucide.createIcons();
 

@@ -39,6 +39,17 @@ const loginLimiter = rateLimit({
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
+// General Rate Limiter for Public APIs (Anti-spam)
+// Client polls location every 2s, so we need a generous limit.
+// 2s = 30 req/min = 450 req/15min. We set limit to 1000 to be safe.
+const publicApiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 1000,
+    message: { message: "Too many requests, please chill." },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
 // Session Middleware
 app.use(session({
     secret: process.env.SESSION_SECRET || 'fallback_secret_do_not_use',
@@ -111,7 +122,7 @@ app.post('/api/logout', (req, res) => {
 });
 
 // GET location (Public)
-app.get('/api/location', (req, res) => {
+app.get('/api/location', publicApiLimiter, (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.json(eventData);
 });
@@ -177,8 +188,88 @@ app.post('/api/location', isAuthenticated, (req, res) => {
     return res.json({ message: "Data updated successfully", data: eventData });
 });
 
+// GET Snow Depth
+app.get('/api/snow', publicApiLimiter, (req, res) => {
+    // Cache for 1 hour to be nice to Skistar
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+
+    // Check internal cache first (simple memory cache)
+    const now = Date.now();
+    if (global.snowCache && (now - global.snowCache.timestamp < 3600000)) {
+        return res.json(global.snowCache.data);
+    }
+
+    const https = require('https');
+    const url = "https://www.skistar.com/Lpv/SnowGraph?lang=sv&area=tandadalen";
+
+    https.get(url, (externalRes) => {
+        let data = '';
+
+        externalRes.on('data', (chunk) => {
+            data += chunk;
+        });
+
+        externalRes.on('end', () => {
+            try {
+                // Regex filtering for Tandådalen block
+                // The structure is: <h5>Tandådalen</h5> ... <h5>VALUE cm</h5> ... 24H: ... VALUE cm ... 72H: ... VALUE cm
+
+                // 1. Find the block starting with Tandådalen
+                // Matches "Tand&#xE5;dalen" (HTML entity for å)
+                const areaRegex = /Tand&#xE5;dalen[\s\S]*?(?=<h5 class="lpv-info-box__heading|$)/i;
+                const areaMatch = data.match(areaRegex);
+
+                if (!areaMatch) {
+                    throw new Error("Could not find Tandådalen section");
+                }
+
+                const sectionHtml = areaMatch[0];
+
+                // 2. Extract Depth
+                // <span class="lpv-info-snow__value-number">41</span>
+                const depthMatch = sectionHtml.match(/class="lpv-info-snow__value-number">\s*(\d+)\s*<\/span>/i);
+                const depth = depthMatch ? depthMatch[1] : "?";
+
+                // 3. Extract 24H
+                // <span class="lpv-info-list__value">23 cm</span>
+                const snow24hRegex = /24H:[\s\S]*?class="lpv-info-list__value">\s*(\d+)\s*cm/i;
+                const match24 = sectionHtml.match(snow24hRegex);
+                const snow24 = match24 ? match24[1] : "0";
+
+                // 4. Extract 72H
+                const snow72hRegex = /72H:[\s\S]*?class="lpv-info-list__value">\s*(\d+)\s*cm/i;
+                const match72 = sectionHtml.match(snow72hRegex);
+                const snow72 = match72 ? match72[1] : "0";
+
+                const result = {
+                    depth: depth,
+                    snow24: snow24,
+                    snow72: snow72
+                };
+
+                // Update cache
+                global.snowCache = {
+                    timestamp: now,
+                    data: result
+                };
+
+                res.json(result);
+            } catch (e) {
+                console.error("Snow parse error:", e);
+                // Return fallback or old cache if available
+                if (global.snowCache) return res.json(global.snowCache.data);
+                res.json({ depth: "?", snow24: "?", snow72: "?" });
+            }
+        });
+
+    }).on("error", (err) => {
+        console.error("Error fetching snow data:", err);
+        res.status(500).json({ error: "Failed to fetch data" });
+    });
+});
+
 // GET High Scores
-app.get('/api/highscores', (req, res) => {
+app.get('/api/highscores', publicApiLimiter, (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     fs.readFile(HIGH_SCORES_FILE, 'utf8', (err, data) => {
         if (err) {
