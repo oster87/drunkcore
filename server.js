@@ -268,6 +268,148 @@ app.get('/api/snow', publicApiLimiter, (req, res) => {
     });
 });
 
+// Helper Function: Fetch SMHI Forecast and Calculate Snow
+const fetchSmhiSnowForecast = (lat, lon) => {
+    return new Promise((resolve, reject) => {
+        const https = require('https');
+        // Point forecast (10 days)
+        const url = `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${lon}/lat/${lat}/data.json`;
+
+        https.get(url, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                try {
+                    const forecast = JSON.parse(data);
+                    const timeSeries = forecast.timeSeries;
+
+                    let buckets = {
+                        tomorrow: 0,
+                        next5Days: 0,
+                        next10Days: 0
+                    };
+
+                    const now = new Date();
+
+                    // Define Tomorrow's Range (Calendar Day)
+                    const tomorrowStart = new Date(now);
+                    tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+                    tomorrowStart.setHours(0, 0, 0, 0);
+
+                    const tomorrowEnd = new Date(tomorrowStart);
+                    tomorrowEnd.setHours(23, 59, 59, 999);
+
+                    // Define rolling windows
+                    const fiveDaysEnd = new Date(now);
+                    fiveDaysEnd.setDate(fiveDaysEnd.getDate() + 5);
+                    fiveDaysEnd.setHours(23, 59, 59, 999); // Include full 5th day
+
+                    const tenDaysEnd = new Date(now);
+                    tenDaysEnd.setDate(tenDaysEnd.getDate() + 10);
+                    tenDaysEnd.setHours(23, 59, 59, 999); // Include full 10th day
+
+                    // Iterate and sum
+                    for (let i = 0; i < timeSeries.length - 1; i++) {
+                        const point = timeSeries[i];
+                        const nextPoint = timeSeries[i + 1];
+
+                        const validTime = new Date(point.validTime);
+
+                        const nextTime = new Date(nextPoint.validTime).getTime();
+                        const durationHours = (nextTime - validTime.getTime()) / (1000 * 3600);
+
+                        // Find Parameters
+                        const tParam = point.parameters.find(p => p.name === 't');
+                        const pmeanParam = point.parameters.find(p => p.name === 'pmean');
+
+                        if (!tParam || !pmeanParam) continue;
+
+                        const temp = tParam.values[0];
+                        const pmean = pmeanParam.values[0]; // mm/h
+
+                        // STRICTLY use User's Temperature Rules for Snow Ratio
+                        // Use 'pmean' which accounts for probability.
+                        if (pmean > 0) {
+                            let ratio = 0;
+
+                            // +1°C to 0°C -> 1:5
+                            if (temp <= 1 && temp >= 0) ratio = 5;
+                            // -1°C to -3°C -> 1:10
+                            else if (temp < 0 && temp >= -3) ratio = 10;
+                            // -4°C to -10°C -> 1:15
+                            else if (temp < -3 && temp >= -10) ratio = 15;
+                            // < -10°C -> 1:20
+                            else if (temp < -10) ratio = 20;
+
+                            if (ratio > 0) {
+                                const precipMm = pmean * durationHours;
+                                const snowMm = precipMm * ratio;
+                                const snowCm = snowMm / 10;
+
+                                // Add to buckets
+
+                                // Tomorrow
+                                if (validTime >= tomorrowStart && validTime <= tomorrowEnd) {
+                                    buckets.tomorrow += snowCm;
+                                }
+
+                                // Next 5 Days (from now)
+                                if (validTime <= fiveDaysEnd) {
+                                    buckets.next5Days += snowCm;
+                                }
+
+                                // Next 10 Days (from now, implicitly includes 5 days)
+                                if (validTime <= tenDaysEnd) {
+                                    buckets.next10Days += snowCm;
+                                }
+                            }
+                        }
+                    }
+
+                    resolve(buckets);
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        }).on('error', (err) => reject(err));
+    });
+};
+
+// GET Forecast Snow
+app.get('/api/snow-forecast', publicApiLimiter, async (req, res) => {
+    // Simple memory cache for 30 mins
+    const now = Date.now();
+    if (global.smhiSnowCache && (now - global.smhiSnowCache.timestamp < 1800000)) {
+        return res.json(global.smhiSnowCache.data);
+    }
+
+    try {
+        // Tandådalen coords
+        const snowBuckets = await fetchSmhiSnowForecast('61.173735', '13.007344');
+
+        // Format response
+        const responseData = {
+            location: "Tandådalen",
+            forecast: {
+                tomorrow: parseFloat(snowBuckets.tomorrow.toFixed(1)),
+                next5Days: parseFloat(snowBuckets.next5Days.toFixed(1)),
+                next10Days: parseFloat(snowBuckets.next10Days.toFixed(1))
+            },
+            until: "10 days"
+        };
+
+        global.smhiSnowCache = {
+            timestamp: now,
+            data: responseData
+        };
+
+        res.json(responseData);
+    } catch (e) {
+        console.error("SMHI Fetch Error", e);
+        res.status(500).json({ error: "Could not fetch forecast" });
+    }
+});
+
 // GET High Scores
 app.get('/api/highscores', publicApiLimiter, (req, res) => {
     res.setHeader('Cache-Control', 'no-store');

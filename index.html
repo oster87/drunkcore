@@ -317,6 +317,24 @@
                     <span>24h: <span id="snow-24" class="text-white">-</span></span>
                     <span>72h: <span id="snow-72" class="text-white">-</span></span>
                 </div>
+
+                <!-- Forecast Section -->
+                <div class="mt-4 pt-3 border-t border-white/10 w-full">
+                    <div class="text-xs uppercase text-blue-300 font-bold mb-1 tracking-widest text-center">Prognos
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-300">
+                        <span>Imorgon:</span>
+                        <span id="fc-tomorrow" class="text-white font-mono">- cm</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-300">
+                        <span>5 Dagar:</span>
+                        <span id="fc-5d" class="text-white font-mono">- cm</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-300">
+                        <span>10 Dagar:</span>
+                        <span id="fc-10d" class="text-white font-mono">- cm</span>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -460,17 +478,30 @@
 
         async function fetchSnowData() {
             try {
+                // Fetch Snow Depth (Skistar/Existing)
                 const response = await fetch('/api/snow');
-                if (!response.ok) return;
-                const data = await response.json();
-
-                if (data.depth !== "?") {
-                    document.getElementById('snow-depth').innerText = data.depth;
-                    document.getElementById('snow-24').innerText = data.snow24 + " cm";
-                    document.getElementById('snow-72').innerText = data.snow72 + " cm";
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.depth !== "?") {
+                        document.getElementById('snow-depth').innerText = data.depth;
+                        document.getElementById('snow-24').innerText = data.snow24 + " cm";
+                        document.getElementById('snow-72').innerText = data.snow72 + " cm";
+                    }
                 }
+
+                // Fetch Snow Forecast (SMHI/New)
+                const fcResponse = await fetch('/api/snow-forecast');
+                if (fcResponse.ok) {
+                    const fcData = await fcResponse.json();
+                    if (fcData.forecast) {
+                        document.getElementById('fc-tomorrow').innerText = "+" + fcData.forecast.tomorrow + " cm";
+                        document.getElementById('fc-5d').innerText = "+" + fcData.forecast.next5Days + " cm";
+                        document.getElementById('fc-10d').innerText = "+" + fcData.forecast.next10Days + " cm";
+                    }
+                }
+
             } catch (e) {
-                console.error("Failed to load snow data");
+                console.error("Failed to load snow data", e);
             }
         }
 
