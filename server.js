@@ -285,8 +285,14 @@ const fetchSmhiSnowForecast = (lat, lon) => {
 
                     let buckets = {
                         tomorrow: 0,
+                        tomorrowMin: 0,
+                        tomorrowMax: 0,
                         next5Days: 0,
-                        next10Days: 0
+                        next5DaysMin: 0,
+                        next5DaysMax: 0,
+                        next10Days: 0,
+                        next10DaysMin: 0,
+                        next10DaysMax: 0
                     };
 
                     const now = new Date();
@@ -318,16 +324,19 @@ const fetchSmhiSnowForecast = (lat, lon) => {
                         const nextTime = new Date(nextPoint.validTime).getTime();
                         const durationHours = (nextTime - validTime.getTime()) / (1000 * 3600);
 
-                        // Find Parameters
-                        // Find Parameters (Temperature, Precip Mean, Precip Category)
+                        // Find Parameters (Temperature, Precip Mean, Precip Category, Precip Min, Precip Max)
                         const tParam = point.parameters.find(p => p.name === 't');
                         const pmeanParam = point.parameters.find(p => p.name === 'pmean');
+                        const pminParam = point.parameters.find(p => p.name === 'pmin');
+                        const pmaxParam = point.parameters.find(p => p.name === 'pmax');
                         const pcatParam = point.parameters.find(p => p.name === 'pcat');
 
                         if (!tParam || !pmeanParam) continue;
 
                         const temp = tParam.values[0];
                         const pmean = pmeanParam.values[0]; // mm/h
+                        const pmin = pminParam ? pminParam.values[0] : pmean; // Fallback to mean if min missing
+                        const pmax = pmaxParam ? pmaxParam.values[0] : pmean; // Fallback to mean if max missing
                         const pcat = pcatParam ? pcatParam.values[0] : 1; // Default to 1 (Snow) if missing to rely on temp fallback
 
                         // STRICTLY use User's Temperature Rules for Snow Ratio
@@ -347,24 +356,34 @@ const fetchSmhiSnowForecast = (lat, lon) => {
 
                             if (ratio > 0) {
                                 const precipMm = pmean * durationHours;
-                                const snowMm = precipMm * ratio;
-                                const snowCm = snowMm / 10;
+                                const precipMmMin = pmin * durationHours;
+                                const precipMmMax = pmax * durationHours;
+
+                                const snowCm = (precipMm * ratio) / 10;
+                                const snowCmMin = (precipMmMin * ratio) / 10;
+                                const snowCmMax = (precipMmMax * ratio) / 10;
 
                                 // Add to buckets
 
                                 // Tomorrow
                                 if (validTime >= tomorrowStart && validTime <= tomorrowEnd) {
                                     buckets.tomorrow += snowCm;
+                                    buckets.tomorrowMin += snowCmMin;
+                                    buckets.tomorrowMax += snowCmMax;
                                 }
 
                                 // Next 5 Days (from now)
                                 if (validTime <= fiveDaysEnd) {
                                     buckets.next5Days += snowCm;
+                                    buckets.next5DaysMin += snowCmMin;
+                                    buckets.next5DaysMax += snowCmMax;
                                 }
 
                                 // Next 10 Days (from now, implicitly includes 5 days)
                                 if (validTime <= tenDaysEnd) {
                                     buckets.next10Days += snowCm;
+                                    buckets.next10DaysMin += snowCmMin;
+                                    buckets.next10DaysMax += snowCmMax;
                                 }
                             }
                         }
@@ -395,9 +414,21 @@ app.get('/api/snow-forecast', publicApiLimiter, async (req, res) => {
         const responseData = {
             location: "Tandådalen",
             forecast: {
-                tomorrow: parseFloat(snowBuckets.tomorrow.toFixed(1)),
-                next5Days: parseFloat(snowBuckets.next5Days.toFixed(1)),
-                next10Days: parseFloat(snowBuckets.next10Days.toFixed(1))
+                tomorrow: {
+                    min: parseFloat(snowBuckets.tomorrowMin.toFixed(1)),
+                    max: parseFloat(snowBuckets.tomorrowMax.toFixed(1)),
+                    mean: parseFloat(snowBuckets.tomorrow.toFixed(1))
+                },
+                next5Days: {
+                    min: parseFloat(snowBuckets.next5DaysMin.toFixed(1)),
+                    max: parseFloat(snowBuckets.next5DaysMax.toFixed(1)),
+                    mean: parseFloat(snowBuckets.next5Days.toFixed(1))
+                },
+                next10Days: {
+                    min: parseFloat(snowBuckets.next10DaysMin.toFixed(1)),
+                    max: parseFloat(snowBuckets.next10DaysMax.toFixed(1)),
+                    mean: parseFloat(snowBuckets.next10Days.toFixed(1))
+                }
             },
             until: "10 days"
         };

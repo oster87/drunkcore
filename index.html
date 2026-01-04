@@ -494,9 +494,15 @@
                 if (fcResponse.ok) {
                     const fcData = await fcResponse.json();
                     if (fcData.forecast) {
-                        document.getElementById('fc-tomorrow').innerText = "+" + fcData.forecast.tomorrow + " cm";
-                        document.getElementById('fc-5d').innerText = "+" + fcData.forecast.next5Days + " cm";
-                        document.getElementById('fc-10d').innerText = "+" + fcData.forecast.next10Days + " cm";
+                        // Helper to format range or single
+                        const formatSnow = (val) => {
+                            if (typeof val === 'object') return `${val.min} - ${val.max}`;
+                            return "+" + val;
+                        }
+
+                        document.getElementById('fc-tomorrow').innerText = formatSnow(fcData.forecast.tomorrow) + " cm";
+                        document.getElementById('fc-5d').innerText = formatSnow(fcData.forecast.next5Days) + " cm";
+                        document.getElementById('fc-10d').innerText = formatSnow(fcData.forecast.next10Days) + " cm";
                     }
                 }
 
