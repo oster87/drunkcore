@@ -301,12 +301,12 @@ const fetchSmhiSnowForecast = (lat, lon) => {
 
                     // Define rolling windows
                     const fiveDaysEnd = new Date(now);
-                    fiveDaysEnd.setDate(fiveDaysEnd.getDate() + 5);
-                    fiveDaysEnd.setHours(23, 59, 59, 999); // Include full 5th day
+                    fiveDaysEnd.setDate(fiveDaysEnd.getDate() + 4);
+                    fiveDaysEnd.setHours(23, 59, 59, 999); // Include full 4th day from now (Total 5 days span)
 
                     const tenDaysEnd = new Date(now);
-                    tenDaysEnd.setDate(tenDaysEnd.getDate() + 10);
-                    tenDaysEnd.setHours(23, 59, 59, 999); // Include full 10th day
+                    tenDaysEnd.setDate(tenDaysEnd.getDate() + 9);
+                    tenDaysEnd.setHours(23, 59, 59, 999); // Include full 9th day from now (Total 10 days span)
 
                     // Iterate and sum
                     for (let i = 0; i < timeSeries.length - 1; i++) {
@@ -319,17 +319,21 @@ const fetchSmhiSnowForecast = (lat, lon) => {
                         const durationHours = (nextTime - validTime.getTime()) / (1000 * 3600);
 
                         // Find Parameters
+                        // Find Parameters (Temperature, Precip Mean, Precip Category)
                         const tParam = point.parameters.find(p => p.name === 't');
                         const pmeanParam = point.parameters.find(p => p.name === 'pmean');
+                        const pcatParam = point.parameters.find(p => p.name === 'pcat');
 
                         if (!tParam || !pmeanParam) continue;
 
                         const temp = tParam.values[0];
                         const pmean = pmeanParam.values[0]; // mm/h
+                        const pcat = pcatParam ? pcatParam.values[0] : 1; // Default to 1 (Snow) if missing to rely on temp fallback
 
                         // STRICTLY use User's Temperature Rules for Snow Ratio
-                        // Use 'pmean' which accounts for probability.
-                        if (pmean > 0) {
+                        // Combine with SMHI 'pcat' (Precipitation Category) to ensure we don't count cold rain as snow.
+                        // pcat 1 = Snow, 2 = Snow and Rain. (3-6 are Rain/Drizzle/Freezing Rain)
+                        if (pmean > 0 && (pcat === 1 || pcat === 2)) {
                             let ratio = 0;
 
                             // +1°C to 0°C -> 1:5
