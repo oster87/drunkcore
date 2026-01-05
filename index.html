@@ -323,7 +323,7 @@
                     <div class="text-xs uppercase text-blue-300 font-bold mb-1 tracking-widest text-center">Prognos
                     </div>
                     <div class="flex justify-between text-xs text-gray-300">
-                        <span>Imorgon:</span>
+                        <span>24h:</span>
                         <span id="fc-tomorrow" class="text-white font-mono">- cm</span>
                     </div>
                     <div class="flex justify-between text-xs text-gray-300">
@@ -500,7 +500,7 @@
                             return "+" + val;
                         }
 
-                        document.getElementById('fc-tomorrow').innerText = formatSnow(fcData.forecast.tomorrow) + " cm";
+                        document.getElementById('fc-tomorrow').innerText = formatSnow(fcData.forecast.next24h) + " cm";
                         document.getElementById('fc-5d').innerText = formatSnow(fcData.forecast.next5Days) + " cm";
                         document.getElementById('fc-10d').innerText = formatSnow(fcData.forecast.next10Days) + " cm";
                     }

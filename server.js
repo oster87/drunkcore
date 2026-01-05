@@ -284,9 +284,9 @@ const fetchSmhiSnowForecast = (lat, lon) => {
                     const timeSeries = forecast.timeSeries;
 
                     let buckets = {
-                        tomorrow: 0,
-                        tomorrowMin: 0,
-                        tomorrowMax: 0,
+                        next24h: 0,
+                        next24hMin: 0,
+                        next24hMax: 0,
                         next5Days: 0,
                         next5DaysMin: 0,
                         next5DaysMax: 0,
@@ -297,13 +297,9 @@ const fetchSmhiSnowForecast = (lat, lon) => {
 
                     const now = new Date();
 
-                    // Define Tomorrow's Range (Calendar Day)
-                    const tomorrowStart = new Date(now);
-                    tomorrowStart.setDate(tomorrowStart.getDate() + 1);
-                    tomorrowStart.setHours(0, 0, 0, 0);
-
-                    const tomorrowEnd = new Date(tomorrowStart);
-                    tomorrowEnd.setHours(23, 59, 59, 999);
+                    // Define Rolling 24h Window
+                    const next24hEnd = new Date(now);
+                    next24hEnd.setHours(next24hEnd.getHours() + 24);
 
                     // Define rolling windows
                     const fiveDaysEnd = new Date(now);
@@ -365,11 +361,11 @@ const fetchSmhiSnowForecast = (lat, lon) => {
 
                                 // Add to buckets
 
-                                // Tomorrow
-                                if (validTime >= tomorrowStart && validTime <= tomorrowEnd) {
-                                    buckets.tomorrow += snowCm;
-                                    buckets.tomorrowMin += snowCmMin;
-                                    buckets.tomorrowMax += snowCmMax;
+                                // Next 24h (Rolling)
+                                if (validTime <= next24hEnd) {
+                                    buckets.next24h += snowCm;
+                                    buckets.next24hMin += snowCmMin;
+                                    buckets.next24hMax += snowCmMax;
                                 }
 
                                 // Next 5 Days (from now)
@@ -414,10 +410,10 @@ app.get('/api/snow-forecast', publicApiLimiter, async (req, res) => {
         const responseData = {
             location: "Tandådalen",
             forecast: {
-                tomorrow: {
-                    min: parseFloat(snowBuckets.tomorrowMin.toFixed(1)),
-                    max: parseFloat(snowBuckets.tomorrowMax.toFixed(1)),
-                    mean: parseFloat(snowBuckets.tomorrow.toFixed(1))
+                next24h: {
+                    min: parseFloat(snowBuckets.next24hMin.toFixed(1)),
+                    max: parseFloat(snowBuckets.next24hMax.toFixed(1)),
+                    mean: parseFloat(snowBuckets.next24h.toFixed(1))
                 },
                 next5Days: {
                     min: parseFloat(snowBuckets.next5DaysMin.toFixed(1)),
