@@ -246,8 +246,25 @@
             <span data-text="Man" class="glitch block text-white drop-shadow-lg md:-mt-4">Man</span>
         </h1>
 
+        <!-- Livestream Hero (Hidden by default) -->
+        <div id="livestream-hero" class="hidden w-full max-w-4xl mx-auto mb-12 relative z-40 reveal">
+            <div
+                class="relative w-full pb-[56.25%] shadow-[0_0_50px_rgba(255,0,255,0.4)] border border-white/20 rounded-xl overflow-hidden group">
+                <div
+                    class="absolute top-4 left-4 z-50 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded animate-pulse shadow-lg">
+                    🔴 LIVE
+                </div>
+                <iframe id="livestream-frame" class="absolute top-0 left-0 w-full h-full" src="" frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+                </iframe>
+            </div>
+            <p class="text-neon-cyan font-display text-xl mt-2 tracking-widest uppercase animate-pulse">Sänds live från
+                Tandådalen</p>
+        </div>
+
         <!-- Countdown -->
-        <div class="flex gap-4 md:gap-8 justify-center mb-12 relative z-30 reveal">
+        <div id="countdown-container" class="flex gap-4 md:gap-8 justify-center mb-12 relative z-30 reveal">
             <div class="text-center">
                 <span id="days" class="font-display text-4xl md:text-6xl text-white">00</span>
                 <span class="block text-xs uppercase text-neon-cyan tracking-widest">Dagar</span>
@@ -393,6 +410,8 @@
         </div>
     </section>
 
+
+
     <!-- Location -->
     <section id="location" class="relative z-20 py-24 bg-winter-dark border-t border-white/10">
         <div class="max-w-4xl mx-auto px-6 text-center reveal">
@@ -423,7 +442,7 @@
         <p class="font-display text-3xl text-white mb-2">DRUNKCODE</p>
         <p class="text-gray-600 font-mono text-sm mb-8">EST. 2026 · Sälen</p>
 
-        <a href="https://www.youtube.com/@Drunkcode-Live" target="_blank"
+        <a href="https://www.youtube.com/@GurkoGurgel" target="_blank"
             class="inline-flex items-center gap-3 text-white hover:text-red-500 transition-colors group">
             <i data-lucide="youtube" class="w-6 h-6 group-hover:fill-current"></i>
             <span class="font-display text-xl tracking-widest text-red-500 group-hover:text-red-400">SE LIVE PÅ
@@ -514,6 +533,48 @@
         // Fetch immediately and then poll faster
         fetchEventData();
         fetchSnowData();
+
+        async function checkLivestream() {
+            try {
+                const response = await fetch('/api/livestream');
+                if (response.ok) {
+                    const data = await response.json();
+                    const section = document.getElementById('livestream-hero');
+                    const iframe = document.getElementById('livestream-frame');
+                    const countdown = document.getElementById('countdown-container');
+
+                    if (data.live && data.videoId) {
+                        // Found a stream!
+                        section.classList.remove('hidden');
+                        if (countdown) countdown.classList.add('hidden'); // Hide countdown when live
+
+                        // Construct embed URL
+                        const embedUrl = `https://www.youtube.com/embed/${data.videoId}?autoplay=1&mute=1`;
+
+                        // Only set src if changed to avoid reloading
+                        if (iframe.src !== embedUrl) {
+                            iframe.src = embedUrl;
+                            console.log("Livestream detected: ", data.videoId);
+                        }
+                    } else {
+                        // Not live
+                        section.classList.add('hidden');
+                        if (countdown) countdown.classList.remove('hidden'); // Show countdown again if offline
+
+                        // Clear src to stop playing if it was playing
+                        if (iframe.src && iframe.src !== "") {
+                            iframe.src = "";
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Livestream check failed", e);
+            }
+        }
+
+        checkLivestream(); // Check immediately
+        setInterval(checkLivestream, 60000); // Check every 60s (matches cache)
+
         setInterval(fetchEventData, 2000);
         setInterval(fetchSnowData, 600000); // Create separate poll for snow (10 min)
 
@@ -580,9 +641,8 @@
             const distance = targetDate - now;
 
             if (distance < 0) {
-                document.getElementById("days").innerText = "00";
-                document.getElementById("hours").innerText = "00";
-                document.getElementById("minutes").innerText = "00";
+                const container = document.getElementById("countdown-container");
+                if (container) container.classList.add("hidden");
                 return;
             }
 

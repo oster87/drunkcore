@@ -25,7 +25,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "https:"],
             connectSrc: ["'self'"],
-            frameSrc: ["'self'", "https://*.google.com", "https://*.google.se"],
+            frameSrc: ["'self'", "https://*.google.com", "https://*.google.se", "https://www.youtube.com"],
         },
     },
 }));
@@ -439,6 +439,82 @@ app.get('/api/snow-forecast', publicApiLimiter, async (req, res) => {
         console.error("SMHI Fetch Error", e);
         res.status(500).json({ error: "Could not fetch forecast" });
     }
+});
+
+// GET Livestream Status (With Caching & Security)
+app.get('/api/livestream', publicApiLimiter, (req, res) => {
+    const CHANNEL_ID = 'UChvp7KljfQooPDFOZ0JRbXA'; // @GurkoGurgel (Testing)
+    const CACHE_DURATION = 60000; // 60 seconds
+
+    // Check Cache
+    const now = Date.now();
+    if (global.liveStreamCache && (now - global.liveStreamCache.timestamp < CACHE_DURATION)) {
+        return res.json(global.liveStreamCache.data);
+    }
+
+    const https = require('https');
+    // Using the /live URL for the channel ID is the most robust public way without API key
+    const url = `https://www.youtube.com/channel/${CHANNEL_ID}/live`;
+
+    const request = https.get(url, (response) => {
+        // If we get a 302/301 redirect to a /watch?v= URL, they are likely live!
+        if (response.statusCode === 301 || response.statusCode === 302) {
+            const location = response.headers.location;
+            if (location && location.includes('/watch?v=')) {
+                const videoIdMatch = location.match(/v=([^&]+)/);
+                if (videoIdMatch && videoIdMatch[1]) {
+                    const videoId = videoIdMatch[1];
+                    // Strict Validation: Alphanumeric + - _
+                    const result = { live: true, videoId: videoId };
+
+                    global.liveStreamCache = { timestamp: now, data: result };
+                    return res.json(result);
+                }
+            }
+        }
+
+        let data = '';
+        response.on('data', chunk => data += chunk);
+        response.on('end', () => {
+            // If no redirect, check HTML content
+            // Look for <link rel="canonical" href="https://www.youtube.com/watch?v=...">
+            // AND isLive content
+
+            try {
+                const isLive = data.includes('isLive":true');
+                const canonicalMatch = data.match(/<link rel="canonical" href="([^"]+)"/);
+                const canonicalUrl = canonicalMatch ? canonicalMatch[1] : '';
+
+                if (isLive && canonicalUrl.includes('/watch?v=')) {
+                    const videoIdMatch = canonicalUrl.match(/v=([^&]+)/);
+                    if (videoIdMatch && videoIdMatch[1]) {
+                        const videoId = videoIdMatch[1];
+
+                        // Security: Validate ID format
+                        if (/^[a-zA-Z0-9_-]+$/.test(videoId)) {
+                            const result = { live: true, videoId: videoId };
+                            global.liveStreamCache = { timestamp: now, data: result };
+                            return res.json(result);
+                        }
+                    }
+                }
+
+                // If not live or validation failed
+                const result = { live: false };
+                global.liveStreamCache = { timestamp: now, data: result };
+                res.json(result);
+
+            } catch (e) {
+                console.error("Error parsing YouTube data:", e);
+                res.json({ live: false });
+            }
+        });
+    });
+
+    request.on('error', (err) => {
+        console.error("YouTube Fetch Error:", err);
+        res.status(500).json({ live: false });
+    });
 });
 
 // GET High Scores
