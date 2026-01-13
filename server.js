@@ -443,7 +443,7 @@ app.get('/api/snow-forecast', publicApiLimiter, async (req, res) => {
 
 // GET Livestream Status (With Caching & Security)
 app.get('/api/livestream', publicApiLimiter, (req, res) => {
-    const CHANNEL_ID = 'UChvp7KljfQooPDFOZ0JRbXA'; // @GurkoGurgel (Testing)
+    const CHANNEL_ID = 'UCHXGMlKfRgYgCkxN0QJkJDw'; // @DrunkCodeLive
     const CACHE_DURATION = 60000; // 60 seconds
 
     // Check Cache
