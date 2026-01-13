@@ -575,7 +575,7 @@
         checkLivestream(); // Check immediately
         setInterval(checkLivestream, 60000); // Check every 60s (matches cache)
 
-        setInterval(fetchEventData, 2000);
+        setInterval(fetchEventData, 10000);
         setInterval(fetchSnowData, 600000); // Create separate poll for snow (10 min)
 
         lucide.createIcons();

@@ -44,7 +44,7 @@ const loginLimiter = rateLimit({
 // 2s = 30 req/min = 450 req/15min. We set limit to 1000 to be safe.
 const publicApiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 1000,
+    max: 5000,
     message: { message: "Too many requests, please chill." },
     standardHeaders: true,
     legacyHeaders: false,
