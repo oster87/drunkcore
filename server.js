@@ -456,7 +456,16 @@ app.get('/api/livestream', publicApiLimiter, (req, res) => {
     // Using the /live URL for the channel ID is the most robust public way without API key
     const url = `https://www.youtube.com/channel/${CHANNEL_ID}/live`;
 
-    const request = https.get(url, (response) => {
+    const options = {
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Cookie': 'CONSENT=YES+cb.20210328-17-p0.en+FX+479; SOCS=CAESEwgDEgk0ODE3Nzk3MjQaAmVuIAEaBgiA_LyaBg;'
+        }
+    };
+
+    const request = https.get(url, options, (response) => {
         // If we get a 302/301 redirect to a /watch?v= URL, they are likely live!
         if (response.statusCode === 301 || response.statusCode === 302) {
             const location = response.headers.location;
@@ -464,6 +473,7 @@ app.get('/api/livestream', publicApiLimiter, (req, res) => {
                 const videoIdMatch = location.match(/v=([^&]+)/);
                 if (videoIdMatch && videoIdMatch[1]) {
                     const videoId = videoIdMatch[1];
+                    console.log(`[YouTube] Detected LIVE via redirect: ${videoId}`);
                     // Strict Validation: Alphanumeric + - _
                     const result = { live: true, videoId: videoId };
 
@@ -489,6 +499,7 @@ app.get('/api/livestream', publicApiLimiter, (req, res) => {
                     const videoIdMatch = canonicalUrl.match(/v=([^&]+)/);
                     if (videoIdMatch && videoIdMatch[1]) {
                         const videoId = videoIdMatch[1];
+                        console.log(`[YouTube] Detected LIVE via canonical: ${videoId}`);
 
                         // Security: Validate ID format
                         if (/^[a-zA-Z0-9_-]+$/.test(videoId)) {
