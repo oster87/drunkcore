@@ -38,7 +38,7 @@
                         }
                     },
                     backgroundImage: {
-                        'hero-image': "url('hero_clean.png')",
+                        'hero-image': "url('hero_post_party.png')",
                         'disco-gradient': 'linear-gradient(to bottom, rgba(2,6,23,0.3), rgba(2,6,23,0.9))'
                     },
                     animation: {
@@ -209,8 +209,7 @@
             </a>
 
             <div class="hidden md:flex gap-6">
-                <a href="#info"
-                    class="font-display text-xl uppercase tracking-wide hover:text-neon-cyan transition-colors">Info</a>
+
                 <a href="#location"
                     class="font-display text-xl uppercase tracking-wide hover:text-neon-cyan transition-colors">Plats</a>
                 <button onclick="HazeHunterGame.open()"
@@ -261,21 +260,7 @@
                 Tandådalen</p>
         </div>
 
-        <!-- Countdown -->
-        <div id="countdown-container" class="flex gap-4 md:gap-8 justify-center mb-12 relative z-30 reveal">
-            <div class="text-center">
-                <span id="days" class="font-display text-4xl md:text-6xl text-white">00</span>
-                <span class="block text-xs uppercase text-neon-cyan tracking-widest">Dagar</span>
-            </div>
-            <div class="text-center">
-                <span id="hours" class="font-display text-4xl md:text-6xl text-white">00</span>
-                <span class="block text-xs uppercase text-neon-pink tracking-widest">Timmar</span>
-            </div>
-            <div class="text-center">
-                <span id="minutes" class="font-display text-4xl md:text-6xl text-white">00</span>
-                <span class="block text-xs uppercase text-neon-yellow tracking-widest">Min</span>
-            </div>
-        </div>
+
 
         <div
             class="glass-dark p-6 rounded-none border-l-4 border-neon-cyan max-w-2xl mx-auto transform skew-x-[-10deg] hover:skew-x-0 transition-transform duration-500">
@@ -291,37 +276,10 @@
         </div>
 
         <!-- Info Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-8 w-full max-w-7xl px-4 reveal">
-            <!-- Box 1: Date -->
-            <div
-                class="bg-black/60 backdrop-blur-md border border-white/20 p-3 flex flex-col items-center justify-center group hover:border-neon-cyan transition-colors">
-                <i data-lucide="calendar"
-                    class="w-8 h-8 text-neon-cyan mb-1 group-hover:scale-110 transition-transform"></i>
-                <span class="font-display text-xl md:text-2xl leading-none mb-1">Söndag-Onsdag</span>
-                <span class="text-xs uppercase text-gray-400">V5</span>
-            </div>
-
-            <!-- Box 2: Time -->
-            <div
-                class="bg-black/60 backdrop-blur-md border border-white/20 p-3 flex flex-col items-center justify-center group hover:border-neon-pink transition-colors">
-                <i data-lucide="clock"
-                    class="w-8 h-8 text-neon-pink mb-1 group-hover:scale-110 transition-transform"></i>
-                <span id="start-time" class="font-display text-2xl md:text-3xl leading-none mb-1">12:00</span>
-                <span class="text-xs uppercase text-gray-400">Till Sent</span>
-            </div>
-
-            <!-- Box 3: Price -->
-            <div
-                class="bg-black/60 backdrop-blur-md border border-white/20 p-3 flex flex-col items-center justify-center group hover:border-neon-yellow transition-colors">
-                <i data-lucide="ticket"
-                    class="w-8 h-8 text-neon-yellow mb-1 group-hover:scale-110 transition-transform"></i>
-                <span class="font-display text-2xl md:text-3xl leading-none mb-1">GRATIS</span>
-                <span class="text-xs uppercase text-gray-400">Drop-in</span>
-            </div>
-
+        <div class="flex justify-center flex-wrap gap-4 mt-8 w-full max-w-7xl px-4 reveal">
             <!-- Box 4: Snow Depth -->
             <div
-                class="bg-black/60 backdrop-blur-md border border-white/20 p-3 flex flex-col items-center justify-center group hover:border-blue-400 transition-colors">
+                class="bg-black/60 backdrop-blur-md border border-white/20 p-3 flex flex-col items-center justify-center group hover:border-blue-400 transition-colors w-48">
                 <i data-lucide="snowflake"
                     class="w-8 h-8 text-blue-400 mb-1 group-hover:scale-110 transition-transform"></i>
                 <div class="flex items-baseline gap-1 mb-1">
@@ -336,7 +294,7 @@
 
             <!-- Box 5: Forecast -->
             <div
-                class="bg-black/60 backdrop-blur-md border border-white/20 p-3 flex flex-col items-center justify-center group hover:border-blue-300 transition-colors">
+                class="bg-black/60 backdrop-blur-md border border-white/20 p-3 flex flex-col items-center justify-center group hover:border-blue-300 transition-colors w-48">
                 <span class="text-xs md:text-sm uppercase text-blue-300 font-bold tracking-widest mb-1">Prognos</span>
                 <div class="w-full space-y-1">
                     <div class="flex justify-between text-[10px] text-gray-300">
@@ -358,58 +316,7 @@
 
 
 
-    <!-- Content / Vibe -->
-    <section id="info" class="relative z-20 bg-black py-24 border-t border-white/10">
-        <div class="max-w-6xl mx-auto px-6 reveal">
-            <div class="flex flex-col md:flex-row gap-16 items-center">
-                <div class="md:w-1/2">
-                    <h2 class="font-display text-6xl text-white mb-6 leading-none">
-                        Techno & DnB i <br><span class="text-neon-pink">Naturen.</span>
-                    </h2>
-                    <p class="text-xl text-gray-400 mb-8 font-light">
-                        Vi flyttar ut högtalarna i snön för ett rått och intimt DJ-set under bar himmel.
-                        Tunga basgångar möter vinterkylan. Klä dig varmt, dansa dig svettig.
-                    </p>
 
-                    <div class="space-y-6">
-                        <div class="flex items-center gap-4">
-                            <div class="bg-neon-cyan/10 p-3 rounded-full text-neon-cyan">
-                                <i data-lucide="music-2" class="w-6 h-6"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-display text-2xl">Live Set</h3>
-                                <p class="text-sm text-gray-500">Techno & DnB</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <div class="bg-neon-yellow/10 p-3 rounded-full text-neon-yellow">
-                                <i data-lucide="beer" class="w-6 h-6"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-display text-2xl">I Baren</h3>
-                                <p class="text-sm text-gray-500">Ta med egen öl</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="md:w-1/2 relative">
-                    <div
-                        class="absolute inset-0 bg-gradient-to-tr from-neon-cyan to-neon-pink blur-3xl opacity-20 rounded-full">
-                    </div>
-                    <div class="relative border-2 border-white/10 p-8 bg-white/5 backdrop-blur-sm">
-                        <h3 class="font-display text-4xl mb-4 text-center">LINEUP</h3>
-                        <ul class="space-y-4 text-center font-mono text-lg text-neon-cyan">
-                            <li class="border-b border-white/10 pb-2">Johan G</li>
-                            <li class="border-b border-white/10 pb-2">Gurgel</li>
-                            <li class="border-b border-white/10 pb-2">Oster</li>
-                            <li class="pb-2">More TBA...</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
 
 
@@ -472,11 +379,7 @@
                 if (!response.ok) throw new Error("Offline");
                 const data = await response.json();
 
-                // Update start time if exists
-                if (data.startTime) {
-                    const timeEl = document.getElementById('start-time');
-                    if (timeEl) timeEl.innerText = data.startTime;
-                }
+
 
                 // Update map link if exists
                 if (data.mapLink) {
@@ -560,7 +463,7 @@
                     } else {
                         // Not live
                         section.classList.add('hidden');
-                        if (countdown) countdown.classList.remove('hidden'); // Show countdown again if offline
+
 
                         // Clear src to stop playing if it was playing
                         if (iframe.src && iframe.src !== "") {
@@ -634,30 +537,7 @@
         // Trigger once on load
         reveal();
 
-        // Countdown Timer
-        const targetDate = new Date("2026-01-25T12:00:00").getTime(); // V4 Söndag
 
-        function updateCountdown() {
-            const now = new Date().getTime();
-            const distance = targetDate - now;
-
-            if (distance < 0) {
-                const container = document.getElementById("countdown-container");
-                if (container) container.classList.add("hidden");
-                return;
-            }
-
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-
-            document.getElementById("days").innerText = days < 10 ? "0" + days : days;
-            document.getElementById("hours").innerText = hours < 10 ? "0" + hours : hours;
-            document.getElementById("minutes").innerText = minutes < 10 ? "0" + minutes : minutes;
-        }
-
-        setInterval(updateCountdown, 1000);
-        updateCountdown();
     </script>
     <!-- Game Modal -->
     <div id="game-modal"
